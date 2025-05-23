@@ -1,0 +1,29 @@
+/* src/components/Footer.css */
+.main-footer {
+  background-color: #222;
+  padding: 20px;
+  text-align: center;
+  color: #aaa;
+  font-size: 0.9em;
+  border-top: 1px solid #333;
+  margin-top: auto; /* Empurra o footer para o final se a página for curta */
+}
+
+.main-footer p {
+  margin-bottom: 10px;
+}
+
+.social-links {
+  margin-top: 10px;
+}
+
+.social-icon {
+  color: #fff;
+  text-decoration: none;
+  margin: 0 10px;
+  transition: color 0.3s ease;
+}
+
+.social-icon:hover {
+  color: #f7d700; /* Dourado */
+}

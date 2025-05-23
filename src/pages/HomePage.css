@@ -1,0 +1,101 @@
+.homepage-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1; /* Ocupa o espaço restante entre header e footer */
+  padding: 40px 20px;
+  text-align: center;
+  background-color: #282c34; /* Fundo escuro */
+  color: #fff;
+}
+
+.homepage-container h1 {
+  font-size: 3em;
+  color: #f7d700;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+.homepage-container p {
+  font-size: 1.2em;
+  color: #ccc;
+  margin-bottom: 40px;
+}
+
+.game-options {
+  display: flex;
+  flex-wrap: wrap; /* Permite que os cards quebrem a linha em telas menores */
+  justify-content: center;
+  gap: 30px; /* Espaço entre os cards */
+  margin-bottom: 50px;
+}
+
+.game-card {
+  background-color: #333;
+  border-radius: 15px;
+  padding: 30px;
+  width: 280px; /* Largura fixa para os cards */
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none; /* Remove sublinhado do link */
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  position: relative; /* Para o "Em Breve" */
+}
+
+.game-card:hover {
+  transform: translateY(-8px) scale(1.02); /* Efeito de elevação ao passar o mouse */
+  background-color: #444;
+}
+
+.game-card h2 {
+  font-size: 2em;
+  color: #00ff00; /* Verde para títulos de jogos */
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.game-card p {
+  font-size: 1em;
+  color: #aaa;
+  margin-bottom: 0;
+}
+
+.coming-soon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #dc3545; /* Vermelho */
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.8em;
+  font-weight: bold;
+  opacity: 0.9;
+}
+
+.footer-note {
+  font-size: 0.9em;
+  color: #777;
+  margin-top: 50px;
+}
+
+/* Responsividade básica para telas menores */
+@media (max-width: 768px) {
+  .homepage-container h1 {
+    font-size: 2.2em;
+  }
+  .game-options {
+    flex-direction: column; /* Cards em coluna em telas menores */
+    align-items: center;
+  }
+  .game-card {
+    width: 90%; /* Ocupa mais largura */
+    max-width: 350px;
+  }
+}

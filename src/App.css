@@ -1,0 +1,50 @@
+/* src/App.css */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #1a1a1a; /* Fundo mais escuro */
+  color: #e0e0e0;
+  margin: 0;
+}
+
+#root { /* Ocupa a altura total, pois o App será renderizado aqui */
+  min-height: 100vh;
+}
+
+.app-layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Garante que o contêiner ocupa a altura total da viewport */
+}
+
+.main-content {
+  flex-grow: 1; /* Faz o conteúdo principal preencher o espaço restante */
+  display: flex; /* Para que o conteúdo da página possa ser centralizado */
+  justify-content: center;
+  align-items: center;
+  padding: 20px; /* Padding geral para o conteúdo */
+  box-sizing: border-box;
+}
+
+/* Estilos genéricos para páginas de "Sobre" ou "TCC" */
+.generic-page-container {
+    padding: 40px;
+    background-color: #333;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    margin: 20px; /* Para não colar nas bordas */
+}
+
+.generic-page-container h2 {
+    color: #f7d700;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.generic-page-container p {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #ccc;
+}
