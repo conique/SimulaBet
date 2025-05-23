@@ -19,7 +19,7 @@ function SlotsPage() {
   const [results, setResults] = useState([0, 0, 0]);
   const [balance, setBalance] = useState(1000);
   const [betAmount, setBetAmount] = useState(10);
-  const [message, setMessage] = useState('SPIN para jogar!');
+  const [message, setMessage] = useState('Pressione SPIN para jogar!');
   const [isSpinning, setIsSpinning] = useState(false);
   const [reelHighlightType, setReelHighlightType] = useState('');
   const spinningTimeout = useRef(null);
@@ -41,7 +41,7 @@ function SlotsPage() {
 
   // --- NOVOS ESTADOS PARA AUTO SPIN ---
   const [isAutoSpinning, setIsAutoSpinning] = useState(false);
-  const autoSpinIntervalId = useRef(null); // Ref para o ID do setInterval do auto-spin
+  const autoSpinIntervalId = useRef(null);
 
 
   // Efeito para limpar timeouts/intervals ao desmontar o componente
@@ -57,7 +57,6 @@ function SlotsPage() {
   }, []);
 
   const spin = () => {
-    // Para garantir que um giro não sobreponha outro:
     if (isSpinning) { 
         setMessage('Giro anterior ainda em andamento...');
         return; 
@@ -72,10 +71,16 @@ function SlotsPage() {
     }
 
     setReelHighlightType('');
-    setIsSpinning(true); // Indica que o jogo está girando
+    setIsSpinning(true);
     setBalance(prevBalance => prevBalance - betAmount); // Deduz a aposta
     setTotalMoneySpent(prevSpent => prevSpent + betAmount);
-    setTotalSpins(prevSpins => prevSpins + 1);
+    
+    // --- MUDANÇA AQUI: Captura o valor do próximo totalSpins ---
+    let nextTotalSpins;
+    setTotalSpins(prevSpins => {
+      nextTotalSpins = prevSpins + 1; // Captura o valor que será o próximo totalSpins
+      return nextTotalSpins;
+    });
 
     setMessage('Girando...');
 
@@ -92,20 +97,48 @@ function SlotsPage() {
       setBalance(currentBalanceAfterSpin => {
         const winAmount = calculateWinAmount(newResults[0], newResults[1], newResults[2]);
         const finalBalance = currentBalanceAfterSpin + winAmount;
+        
+        const profitLossThisSpin = betAmount - winAmount;
+
+        setHouseProfit(prevProfit => prevProfit + profitLossThisSpin);
+        setTotalMoneyWon(prevWon => prevWon + winAmount);
+        
+        const isWin = winAmount > 0;
+        if (isWin) {
+          setWinCount(prevCount => prevCount + 1);
+        } else {
+          setLoseCount(prevCount => prevCount + 1);
+        }
+        
+        setBalanceHistory(prevHistory => {
+          const lastProfit = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1].profit : 0;
+          return [
+            ...prevHistory,
+            { 
+              name: `Giro ${nextTotalSpins}`, // <--- USANDO O VALOR CAPTURADO AQUI!
+              balance: finalBalance, 
+              profit: lastProfit + profitLossThisSpin
+            }
+          ];
+        });
 
         setMessageAndHighlight(winAmount, newResults[0], newResults[1], newResults[2], finalBalance);
-        updateStatistics(winAmount, newResults[0], newResults[1], newResults[2], finalBalance);
+        setIsSpinning(false);
 
-        setIsSpinning(false); // Animação terminou, libera o botão SPIN
-
-        // A lógica de auto-spin chamando spin() recursivamente é REMOVIDA AQUI,
-        // pois o setInterval fora dessa função vai chamar spin() a cada 4 segundos.
+        if (isAutoSpinning && finalBalance >= betAmount) { 
+            setTimeout(() => {
+                spin();
+            }, 1000); 
+        } else if (isAutoSpinning && finalBalance < betAmount) {
+            stopAutoSpin();
+            setMessage('Auto Spin parado: saldo insuficiente para o próximo giro.');
+        }
         return finalBalance;
       });
-    }, 2500); // Duração da animação dos rolos (2.5 segundos)
+    }, 2500);
   };
 
-  // Funções auxiliares (calculateWinAmount, setMessageAndHighlight, updateStatistics)
+  // Funções auxiliares (calculateWinAmount, setMessageAndHighlight)
   const calculateWinAmount = (res1, res2, res3) => {
     if (res1 === res2 && res2 === res3) {
       const winningSymbolIndex = res1;
@@ -118,14 +151,12 @@ function SlotsPage() {
   const setMessageAndHighlight = (winAmount, res1, res2, res3, finalBalance) => {
     let winMessage = 'Você perdeu! Tente novamente.';
     let highlightType = 'lose';
-    let isWin = false;
-
+    
     if (winAmount > 0) {
       const winningSymbolIndex = res1;
       const { name } = paytable[winningSymbolIndex];
       winMessage = `🎉 PARABÉNS! 3 ${name}s! Você ganhou ${winAmount} créditos! 🎉`;
       highlightType = 'win';
-      isWin = true;
     } else {
       if (
         (res1 === res2 && res1 !== res3) ||
@@ -139,20 +170,7 @@ function SlotsPage() {
     setMessage(winMessage);
     setReelHighlightType(highlightType);
   };
-
-  const updateStatistics = (winAmount, res1, res2, res3, currentBalance) => {
-    let isWin = winAmount > 0;
-
-    setTotalMoneyWon(prevWon => prevWon + winAmount);
-    if (isWin) {
-      setWinCount(prevCount => prevCount + 1);
-    } else {
-      setLoseCount(prevCount => prevCount + 1);
-    }
-    setHouseProfit(prevProfit => prevProfit + (betAmount - winAmount));
-  };
-
-
+  
   const handleAdjustBalance = () => {
     const amount = parseInt(adjustAmount);
     if (!isNaN(amount)) {
@@ -170,7 +188,6 @@ function SlotsPage() {
       setMessage(`${amount >= 0 ? 'Adicionado' : 'Removido'} ${Math.abs(amount)} créditos.`);
       setAdjustAmount('');
       setReelHighlightType('');
-      // Para o auto-spin para evitar comportamento inesperado ao ajustar saldo
       if (isAutoSpinning) stopAutoSpin(); 
     } else {
       setMessage('Digite um valor numérico para ajustar o saldo.');
@@ -183,55 +200,46 @@ function SlotsPage() {
       setBetAmount(amount);
       setMessage(`Aposta definida para ${amount} créditos.`);
       setNewBetAmount('');
-      // Para o auto-spin se a aposta for mudada
       if (isAutoSpinning) stopAutoSpin();
     } else {
       setMessage('Digite um valor de aposta válido (maior que zero).');
     }
   };
 
-  // --- FUNÇÕES PARA AUTO SPIN (MACRO SIMPLES) ---
+  // --- FUNÇÕES PARA AUTO SPIN ---
   const startAutoSpin = () => {
     if (balance < betAmount) {
       setMessage('Saldo insuficiente para iniciar Auto Spin!');
       return;
     }
-    if (isAutoSpinning) return; // Já está ativo, não faz nada
+    if (isAutoSpinning) return;
 
     setIsAutoSpinning(true);
-    spin(); // Inicia o PRIMEIRO giro imediatamente
+    spin(); 
 
-    // Define um intervalo para chamadas repetidas de spin() a cada 4 segundos (4000ms)
-    // O setInterval chama a função a cada X ms, independentemente do que está acontecendo.
     autoSpinIntervalId.current = setInterval(() => {
-        // Usa uma callback para balance para obter o valor mais recente no momento da checagem
-        setBalance(currentBalance => {
-            if (currentBalance >= betAmount) { // Verifica saldo antes de CADA tentativa de giro
-                // Não chama spin() diretamente aqui, pois spin() pode ter lógica de isSpinning
-                // A spin() é chamada pelo setInterval, mas com a proteção de isSpinning dentro dela
+        setBalance(currentBalance => { 
+            if (currentBalance >= betAmount) {
                 spin(); 
             } else {
-                // Se o saldo acabar durante o intervalo, para o auto-spin
                 stopAutoSpin();
                 setMessage('Auto Spin parado: saldo insuficiente.');
             }
-            return currentBalance; // Retorna o saldo atual
+            return currentBalance;
         });
-    }, 3500);
+    }, 4000); 
   };
 
   const stopAutoSpin = () => {
     setIsAutoSpinning(false);
-    // Limpa o intervalo do auto-spin
     if (autoSpinIntervalId.current) {
         clearInterval(autoSpinIntervalId.current);
         autoSpinIntervalId.current = null;
     }
-    // Também limpa o timeout do giro atual se ele estiver em andamento, para parar imediatamente a animação
     if (spinningTimeout.current) {
         clearTimeout(spinningTimeout.current);
         spinningTimeout.current = null;
-        setIsSpinning(false); // Garante que o estado de giro seja resetado
+        setIsSpinning(false);
     }
     setMessage('Auto Spin Parado.');
   };
@@ -280,10 +288,10 @@ function SlotsPage() {
           </div>
         </div>
 
-        {/* COLUNA DO MEIO: O Jogo de Slot */}
+        {/* COLUNA DO MEIO*/}
         <div className="center-column">
           <div className="slot-machine-content">
-            <h2 className="section-main-title">Simulador de Slot</h2>
+            <h2 className="section-main-title">Simulador de Slot Machine</h2>
 
             <div className="slots-display">
               <SlotReelWeb symbols={symbols} finalValueIndex={results[0]} isSpinning={isSpinning} highlightType={reelHighlightType} />
@@ -399,7 +407,6 @@ function SlotsPage() {
                                 fill="#8884d8"
                                 dataKey="value"
                                 labelLine={false}
-                                label={({ name, percent }) => percent > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
                             >
                                 {
                                     pieChartData.map((entry, index) => (
