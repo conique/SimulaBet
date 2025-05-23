@@ -1,70 +1,62 @@
-# Getting Started with Create React App
+# Simulador de Cassino Online - TCC
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Este projeto é o Trabalho de Conclusão de Curso (TCC) focado no desenvolvimento de um simulador de jogos de cassino online. O objetivo principal é demonstrar os conceitos de lógica de jogos, design de interface de usuário (UI/UX) e análise de dados em um ambiente interativo.
 
-## Available Scripts
+## Funcionalidades Atuais
 
-In the project directory, you can run:
+- **Jogo de Slot Machine:**
+    - Interface visual com 3 rolos animáveis.
+    - Símbolos personalizados (cereja, limão, sino, diamante, dinheiro, estrela).
+    - Animações de giro e parada com efeito de desaceleração.
+    - Destaque visual (linha de brilho) para resultados de vitória/perda.
+    - Tabela de pagamentos dinâmica e estilizada.
+    - Lógica de vitória baseada em 3 símbolos idênticos na linha central com multiplicadores específicos.
+    - Mensagens de feedback para o jogador (ganhou, perdeu, saldo insuficiente).
+- **Controle de Saldo:**
+    - Painel para ajuste manual do saldo (+/-).
+- **Aposta Variável:**
+    - Painel para definir o valor da aposta por giro.
 
-### `npm start`
+## Tecnologias Utilizadas
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend:** React.js
+- **Estilização:** CSS
+- **Controle de Versão:** Git & GitHub
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Próximas Etapas / Funcionalidades Planejadas
 
-### `npm test`
+- Implementação de gráficos e estatísticas de jogo (dinheiro gasto, ganho, margem da casa, taxa de vitória, etc.).
+- Desenvolvimento de outros jogos de cassino (Roleta, Aviãozinho).
+- Aprimoramento da interface de usuário e experiência do jogador.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Como Rodar o Projeto Localmente
 
-### `npm run build`
+Para rodar este projeto em sua máquina local:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1.  **Clone o repositório:**
+    ```bash
+    git clone [https://github.com/conique/Simulador-Cassino-Online.git](https://github.com/conique/Simulador-Cassino-Online.git)
+    ```
+2.  **Navegue até a pasta do projeto:**
+    ```bash
+    cd Simulador-Cassino-Online
+    ```
+3.  **Instale as dependências:**
+    ```bash
+    npm install
+    # ou se usar yarn:
+    # yarn install
+    ```
+4.  **Inicie o servidor de desenvolvimento:**
+    ```bash
+    npm start
+    # ou se usar yarn:
+    # yarn start
+    ```
+    O aplicativo será aberto automaticamente no seu navegador em `http://localhost:3000`.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Autor
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Pedro Henrique Alves Vieira - github.com/conique
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
