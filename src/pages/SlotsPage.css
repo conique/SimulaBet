@@ -6,26 +6,99 @@
   align-items: center;
   justify-content: center;
   flex-grow: 1;
+  box-sizing: border-box;
+  min-height: calc(100vh - var(--header-height, 0px) - var(--footer-height, 0px));
+}
+
+/* --- Layout principal de 3 colunas --- */
+.main-game-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  /* Três colunas de largura IGUAL */
+  gap: 30px;
+  /* Espaçamento entre as colunas */
+  max-width: 1200px;
+  width: 100%;
   padding: 20px;
+  /* Padding externo da grade */
   box-sizing: border-box;
 }
 
-.slot-machine-content {
+/* Estilos para as COLUNAS (os blocos principais) */
+.left-column,
+.center-column,
+.right-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Centraliza conteúdo horizontalmente dentro da coluna */
   background-color: #333;
+  /* Fundo do bloco da coluna */
   border-radius: 15px;
-  padding: 30px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  text-align: center;
-  max-width: 500px;
-  width: 100%;
+  justify-content: flex-start;
+  /* Todos começam do topo */
+  padding: 20px;
+  /* NOVO: Padding interno para as colunas, criando o espaço "cinza mais claro" */
   box-sizing: border-box;
 }
+
+
+/* --- ESTILOS DO CONTEÚDO DENTRO DOS BLOCOS (os "sub-blocos" mais escuros) --- */
+.slot-machine-content,
+.paytable,
+.statistics-panel {
+  text-align: center;
+  width: 100%;
+  /* Ocupa 100% da largura da coluna pai (ajustada pelo max-width abaixo) */
+  box-sizing: border-box;
+
+  /* --- MUDANÇAS AQUI: Diminuir largura e centralizar --- */
+  max-width: 320px;
+  /* NOVO: Largura máxima para esses blocos internos */
+  margin: 0 auto;
+  /* NOVO: Centraliza o bloco dentro da coluna */
+
+  padding: 30px;
+  /* Mantém o padding interno para o conteúdo de cada bloco */
+  /* Removido margin-top/bottom pois o gap dos controles e o padding da coluna já cuidam */
+  border: none;
+  /* Garante que não haja borda aqui */
+  background-color: #282828;
+  /* NOVO: Cor de fundo mais escura para o paytable e statistics-panel */
+  border-radius: 12px;
+  /* NOVO: Bordas arredondadas para esses blocos internos */
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+  /* NOVO: Sombra interna para profundidade */
+}
+
 
 h1 {
+  /* Removido para que não cause conflito e o novo h2 controle */
+  /* ... (restos dos estilos antigos de h1, se houver) ... */
+  display: none;
+  /* Esconde o h1 antigo se ele ainda for renderizado por algum motivo */
+}
+
+h2 {
+  /* Aplica a todos os h2, incluindo o do simulador de slot */
   color: #f7d700;
+  /* Mesma cor dourada */
+  margin-top: 0;
+  /* Alinhamento ao topo */
   margin-bottom: 25px;
-  font-size: 2.5em;
-  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+  /* Margem inferior padrão */
+  font-size: 2em;
+  /* Tamanho da fonte que você queria igualar */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  /* Sombra de texto */
+  text-align: center;
+  /* Centralizado */
+  width: 100%;
+  /* Ocupa a largura total para centralizar */
+  box-sizing: border-box;
+  padding-left: 0;
+  margin-left: 0;
 }
 
 .slots-display {
@@ -39,21 +112,21 @@ h1 {
 
 .info-panel {
   background-color: #222;
-  padding: 15px;
+  padding: 10px 15px;
   border-radius: 8px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   border: 1px solid #444;
 }
 
 .balance {
-  font-size: 1.8em;
+  font-size: 1.5em;
   color: #00ff00;
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
 }
 
 .bet {
-  font-size: 1.2em;
+  font-size: 1em;
   color: #aaa;
   margin-top: 0;
 }
@@ -68,9 +141,11 @@ h1 {
 .message.win-text {
   color: #00ff00;
 }
+
 .message.lose-text {
   color: #ff0000;
 }
+
 .message:not(.win-text):not(.lose-text) {
   color: #ffd700;
 }
@@ -83,7 +158,8 @@ h1 {
   gap: 15px;
 }
 
-.spin-button, .add-credits-button {
+.spin-button,
+.add-credits-button {
   background-color: #dc3545;
   color: white;
   padding: 15px 30px;
@@ -98,7 +174,8 @@ h1 {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.spin-button:hover:not(:disabled), .add-credits-button:hover {
+.spin-button:hover:not(:disabled),
+.add-credits-button:hover {
   background-color: #c82333;
   transform: translateY(-2px);
 }
@@ -117,24 +194,7 @@ h1 {
   background-color: #0056b3;
 }
 
-/* --- ESTILOS PARA A NOVA TABELA DE PAGAMENTOS EM BLOCOS --- */
-.paytable {
-  background-color: #282828;
-  padding: 25px;
-  border-radius: 12px;
-  margin-top: 40px;
-  border: 1px solid #444;
-  text-align: center;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-}
 
-.paytable h2 {
-  color: #f7d700;
-  margin-top: 0;
-  margin-bottom: 25px;
-  font-size: 2em;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
-}
 
 .paytable-grid {
   display: grid;
@@ -159,28 +219,34 @@ h1 {
 }
 
 .paytable-grid .paytable-item:not(:last-child) {
-    border-right: none;
+  border-right: none;
 }
+
 .paytable-grid .paytable-item:nth-child(3n+1) {
-    border-left: none;
+  border-left: none;
 }
-.paytable-grid > div {
-    border: 1px solid #444;
-    border-width: 0 1px 1px 0;
+
+.paytable-grid>div {
+  border: 1px solid #444;
+  border-width: 0 1px 1px 0;
 }
-.paytable-grid > div:nth-child(3n) {
-    border-right: none;
+
+.paytable-grid>div:nth-child(3n) {
+  border-right: none;
 }
-.paytable-grid > div:nth-child(n+4) {
-    border-top: none;
+
+.paytable-grid>div:nth-child(n+4) {
+  border-top: none;
 }
-.paytable-grid > div:first-child,
-.paytable-grid > div:nth-child(2),
-.paytable-grid > div:nth-child(3) {
-    border-top: none;
+
+.paytable-grid>div:first-child,
+.paytable-grid>div:nth-child(2),
+.paytable-grid>div:nth-child(3) {
+  border-top: none;
 }
-.paytable-grid > div:nth-child(3n+1) {
-    border-left: 1px solid #444;
+
+.paytable-grid>div:nth-child(3n+1) {
+  border-left: 1px solid #444;
 }
 
 
@@ -245,7 +311,8 @@ h1 {
 }
 
 /* --- ESTILOS PARA O PAINEL DE AJUSTE DE SALDO E APOSSTA --- */
-.adjust-balance-panel, .adjust-bet-panel {
+.adjust-balance-panel,
+.adjust-bet-panel {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -255,7 +322,7 @@ h1 {
   padding: 10px 15px;
   border-radius: 8px;
   border: 1px solid #444;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 .adjust-input {
@@ -280,24 +347,194 @@ h1 {
 }
 
 .adjust-button {
-  /* --- MUDANÇAS AQUI: Forçar a largura dos botões --- */
-  flex-shrink: 0; /* Impede o botão de encolher */
-  width: 70px; /* Largura fixa para o botão */
-  text-align: center; /* Centraliza o texto dentro do botão */
-  
+  flex-shrink: 0;
+  width: 70px;
+  text-align: center;
   background-color: #ffc107;
   color: #333;
-  padding: 8px 5px; /* Reduzi o padding horizontal para caber o texto 'Saldo' e 'Aposta' */
+  padding: 8px 5px;
   border: none;
   border-radius: 5px;
   font-size: 1em;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.1s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .adjust-button:hover {
   background-color: #e0a800;
   transform: translateY(-1px);
+}
+
+/* --- NOVOS ESTILOS PARA O PAINEL DE ESTATÍSTICAS E GRÁFICOS --- */
+.statistics-panel {
+  border: 1px solid #444;
+  /* Mantém a borda individual */
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  /* Removido padding, agora os blocos internos gerenciam */
+  background-color: transparent;
+  /* Fundo transparente */
+  box-shadow: none;
+  /* Removida sombra */
+  border: none;
+  /* Removida borda */
+}
+
+/* NOVO: Estilo para cada bloco individual de estatística */
+.stats-block {
+  background-color: #282828;
+  /* Fundo do bloco individual */
+  padding: 25px 20px 20px 20px;
+  /* Ajustado padding-top */
+  border-radius: 12px;
+  /* Borda arredondada */
+  margin-bottom: 20px;
+  /* Espaçamento entre os blocos */
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+  /* Sombra interna */
+  width: 100%;
+  /* Ocupa a largura total da coluna */
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.stats-block:last-child {
+  margin-bottom: 0;
+  /* Remove margem do último bloco */
+}
+
+/* NOVO: Estilo para h2 dentro de statistics-panel */
+.statistics-panel h2 {
+  color: #f7d700;
+  margin-top: 0;
+  /* Garante que o H2 esteja no topo do padding do stats-block */
+  margin-bottom: 25px;
+  /* Margem padrão para h2 */
+  font-size: 2em;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  text-align: center;
+}
+
+
+/* NOVO: Estilo para h3 dentro de stats-block (Resumo, Histórico, Vitórias vs Derrotas) */
+.stats-block h3 {
+  color: #f7d700;
+  margin-top: 0;
+  /* Garante que o H3 esteja no topo do padding do stats-block */
+  margin-bottom: 15px;
+  /* Margem inferior padrão para h3 */
+  font-size: 1.6em;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  text-align: center;
+  width: 100%;
+  /* Para que o text-align:center funcione bem */
+  box-sizing: border-box;
+}
+
+.stats-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.stats-summary p {
+  font-size: 1.1em;
+  color: #ccc;
+  margin: 0;
+}
+
+.stats-summary p strong {
+  color: #fff;
+}
+
+.charts-container {
+  margin-top: 20px;
+}
+
+/* Removido charts-container h3, agora stats-block h3 controla todos */
+/* .charts-container h3 { ... } */
+
+
+/* Estilos para tooltips e legendas do Recharts */
+.recharts-default-tooltip {
+  background-color: #333 !important;
+  border: 1px solid #555 !important;
+  color: #fff !important;
+  border-radius: 5px;
+}
+
+.recharts-tooltip-item {
+  color: #fff !important;
+}
+
+.recharts-legend-item {
+  color: #ccc !important;
+}
+
+/* Cores específicas para os elementos do gráfico de linha (eixos, grade) */
+.recharts-cartesian-grid line {
+  stroke: #444;
+}
+
+.recharts-xAxis .recharts-label,
+.recharts-yAxis .recharts-label {
+  fill: #ccc;
+}
+
+.recharts-xAxis .recharts-cartesian-axis-tick-value,
+.recharts-yAxis .recharts-cartesian-axis-tick-value {
+  fill: #ccc;
+}
+
+/* --- MEDIA QUERIES PARA RESPONSIVIDADE (Celulares/Tablets) --- */
+@media (max-width: 992px) {
+  .main-game-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .left-column,
+  .center-column,
+  .right-column {
+    padding: 0;
+  }
+
+  /* Ajusta a largura máxima para que ocupem mais espaço em telas pequenas */
+  .slot-machine-content,
+  .paytable,
+  .statistics-panel {
+    max-width: 450px;
+    margin: 0 auto;
+  }
+
+  .adjust-balance-panel,
+  .adjust-bet-panel {
+    max-width: 140px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .paytable-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  /* NOVO: Ajuste para os h2 e h1 em telas menores */
+  .paytable h2,
+  .statistics-panel h2,
+  h1 {
+    /* Este seletor agora inclui h1 */
+    font-size: 1.8em;
+  }
+
+  .info-panel p,
+  .stats-summary p {
+    font-size: 1em;
+  }
 }
