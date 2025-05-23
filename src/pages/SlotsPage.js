@@ -19,7 +19,7 @@ function SlotsPage() {
   const [results, setResults] = useState([0, 0, 0]);
   const [balance, setBalance] = useState(1000);
   const [betAmount, setBetAmount] = useState(10);
-  const [message, setMessage] = useState('Pressione SPIN para jogar!');
+  const [message, setMessage] = useState('SPIN para jogar!');
   const [isSpinning, setIsSpinning] = useState(false);
   const [reelHighlightType, setReelHighlightType] = useState('');
   const spinningTimeout = useRef(null);
@@ -39,22 +39,41 @@ function SlotsPage() {
   ]);
   const [houseProfit, setHouseProfit] = useState(0);
 
+  // --- NOVOS ESTADOS PARA AUTO SPIN ---
+  const [isAutoSpinning, setIsAutoSpinning] = useState(false);
+  const autoSpinIntervalId = useRef(null); // Ref para o ID do setInterval do auto-spin
 
+
+  // Efeito para limpar timeouts/intervals ao desmontar o componente
   useEffect(() => {
-    // Para iniciar o gráfico com um ponto, se o saldo inicial não for 1000
-    // Ou para garantir que o 'Giro 0' seja o ponto inicial.
+    return () => {
+      if (spinningTimeout.current) {
+        clearTimeout(spinningTimeout.current);
+      }
+      if (autoSpinIntervalId.current) {
+        clearInterval(autoSpinIntervalId.current);
+      }
+    };
   }, []);
 
   const spin = () => {
-    if (isSpinning) return;
+    // Para garantir que um giro não sobreponha outro:
+    if (isSpinning) { 
+        setMessage('Giro anterior ainda em andamento...');
+        return; 
+    } 
+
     if (balance < betAmount) {
       setMessage('Saldo insuficiente! Adicione mais créditos para continuar.');
+      if (isAutoSpinning) {
+        stopAutoSpin();
+      }
       return;
     }
 
     setReelHighlightType('');
-    setIsSpinning(true);
-    setBalance(prevBalance => prevBalance - betAmount);
+    setIsSpinning(true); // Indica que o jogo está girando
+    setBalance(prevBalance => prevBalance - betAmount); // Deduz a aposta
     setTotalMoneySpent(prevSpent => prevSpent + betAmount);
     setTotalSpins(prevSpins => prevSpins + 1);
 
@@ -65,26 +84,45 @@ function SlotsPage() {
       Math.floor(Math.random() * symbols.length),
       Math.floor(Math.random() * symbols.length),
     ];
-
+    
     setResults(newResults);
 
     clearTimeout(spinningTimeout.current);
     spinningTimeout.current = setTimeout(() => {
-      checkWin(newResults[0], newResults[1], newResults[2]);
-      setIsSpinning(false);
-    }, 2500);
+      setBalance(currentBalanceAfterSpin => {
+        const winAmount = calculateWinAmount(newResults[0], newResults[1], newResults[2]);
+        const finalBalance = currentBalanceAfterSpin + winAmount;
+
+        setMessageAndHighlight(winAmount, newResults[0], newResults[1], newResults[2], finalBalance);
+        updateStatistics(winAmount, newResults[0], newResults[1], newResults[2], finalBalance);
+
+        setIsSpinning(false); // Animação terminou, libera o botão SPIN
+
+        // A lógica de auto-spin chamando spin() recursivamente é REMOVIDA AQUI,
+        // pois o setInterval fora dessa função vai chamar spin() a cada 4 segundos.
+        return finalBalance;
+      });
+    }, 2500); // Duração da animação dos rolos (2.5 segundos)
   };
 
-  const checkWin = (res1, res2, res3) => {
-    let winAmount = 0;
+  // Funções auxiliares (calculateWinAmount, setMessageAndHighlight, updateStatistics)
+  const calculateWinAmount = (res1, res2, res3) => {
+    if (res1 === res2 && res2 === res3) {
+      const winningSymbolIndex = res1;
+      const { payout } = paytable[winningSymbolIndex];
+      return betAmount * payout;
+    }
+    return 0;
+  };
+
+  const setMessageAndHighlight = (winAmount, res1, res2, res3, finalBalance) => {
     let winMessage = 'Você perdeu! Tente novamente.';
     let highlightType = 'lose';
     let isWin = false;
 
-    if (res1 === res2 && res2 === res3) {
+    if (winAmount > 0) {
       const winningSymbolIndex = res1;
-      const { payout, name } = paytable[winningSymbolIndex];
-      winAmount = betAmount * payout;
+      const { name } = paytable[winningSymbolIndex];
       winMessage = `🎉 PARABÉNS! 3 ${name}s! Você ganhou ${winAmount} créditos! 🎉`;
       highlightType = 'win';
       isWin = true;
@@ -98,23 +136,12 @@ function SlotsPage() {
         highlightType = 'lose';
       }
     }
-
-    setBalance(prevBalance => {
-      const currentBalanceAfterSpin = prevBalance + winAmount;
-      
-      setBalanceHistory(prevHistory => [
-        ...prevHistory,
-        { 
-          name: `Giro ${totalSpins}`, 
-          balance: currentBalanceAfterSpin,
-          profit: totalMoneySpent + betAmount - (totalMoneyWon + winAmount)
-        }
-      ]);
-      return currentBalanceAfterSpin;
-    });
-
     setMessage(winMessage);
     setReelHighlightType(highlightType);
+  };
+
+  const updateStatistics = (winAmount, res1, res2, res3, currentBalance) => {
+    let isWin = winAmount > 0;
 
     setTotalMoneyWon(prevWon => prevWon + winAmount);
     if (isWin) {
@@ -122,9 +149,9 @@ function SlotsPage() {
     } else {
       setLoseCount(prevCount => prevCount + 1);
     }
-
     setHouseProfit(prevProfit => prevProfit + (betAmount - winAmount));
   };
+
 
   const handleAdjustBalance = () => {
     const amount = parseInt(adjustAmount);
@@ -143,6 +170,8 @@ function SlotsPage() {
       setMessage(`${amount >= 0 ? 'Adicionado' : 'Removido'} ${Math.abs(amount)} créditos.`);
       setAdjustAmount('');
       setReelHighlightType('');
+      // Para o auto-spin para evitar comportamento inesperado ao ajustar saldo
+      if (isAutoSpinning) stopAutoSpin(); 
     } else {
       setMessage('Digite um valor numérico para ajustar o saldo.');
     }
@@ -154,16 +183,63 @@ function SlotsPage() {
       setBetAmount(amount);
       setMessage(`Aposta definida para ${amount} créditos.`);
       setNewBetAmount('');
+      // Para o auto-spin se a aposta for mudada
+      if (isAutoSpinning) stopAutoSpin();
     } else {
       setMessage('Digite um valor de aposta válido (maior que zero).');
     }
   };
 
+  // --- FUNÇÕES PARA AUTO SPIN (MACRO SIMPLES) ---
+  const startAutoSpin = () => {
+    if (balance < betAmount) {
+      setMessage('Saldo insuficiente para iniciar Auto Spin!');
+      return;
+    }
+    if (isAutoSpinning) return; // Já está ativo, não faz nada
+
+    setIsAutoSpinning(true);
+    spin(); // Inicia o PRIMEIRO giro imediatamente
+
+    // Define um intervalo para chamadas repetidas de spin() a cada 4 segundos (4000ms)
+    // O setInterval chama a função a cada X ms, independentemente do que está acontecendo.
+    autoSpinIntervalId.current = setInterval(() => {
+        // Usa uma callback para balance para obter o valor mais recente no momento da checagem
+        setBalance(currentBalance => {
+            if (currentBalance >= betAmount) { // Verifica saldo antes de CADA tentativa de giro
+                // Não chama spin() diretamente aqui, pois spin() pode ter lógica de isSpinning
+                // A spin() é chamada pelo setInterval, mas com a proteção de isSpinning dentro dela
+                spin(); 
+            } else {
+                // Se o saldo acabar durante o intervalo, para o auto-spin
+                stopAutoSpin();
+                setMessage('Auto Spin parado: saldo insuficiente.');
+            }
+            return currentBalance; // Retorna o saldo atual
+        });
+    }, 3500);
+  };
+
+  const stopAutoSpin = () => {
+    setIsAutoSpinning(false);
+    // Limpa o intervalo do auto-spin
+    if (autoSpinIntervalId.current) {
+        clearInterval(autoSpinIntervalId.current);
+        autoSpinIntervalId.current = null;
+    }
+    // Também limpa o timeout do giro atual se ele estiver em andamento, para parar imediatamente a animação
+    if (spinningTimeout.current) {
+        clearTimeout(spinningTimeout.current);
+        spinningTimeout.current = null;
+        setIsSpinning(false); // Garante que o estado de giro seja resetado
+    }
+    setMessage('Auto Spin Parado.');
+  };
+
+  // --- CÁLCULOS DERIVADOS PARA EXIBIÇÃO DAS ESTATÍSTICAS ---
   const winRate = totalSpins > 0 ? ((winCount / totalSpins) * 100).toFixed(2) : 0;
   const netProfitPlayer = totalMoneyWon - totalMoneySpent;
   const houseEdge = totalMoneySpent > 0 ? ((houseProfit / totalMoneySpent) * 100).toFixed(2) : 0;
-  
-  // NOVO: Cálculo da porcentagem de derrotas
   const lossRate = totalSpins > 0 ? ((loseCount / totalSpins) * 100).toFixed(2) : 0;
 
 
@@ -224,14 +300,25 @@ function SlotsPage() {
             </div>
 
             <div className="controls">
+              {/* Botão SPIN (Manual) */}
               <button
                 className="spin-button"
                 onClick={spin}
-                disabled={isSpinning || balance < betAmount}
+                disabled={isSpinning || balance < betAmount || isAutoSpinning} // Desabilita se auto-spinning
               >
                 {isSpinning ? 'GIRANDO...' : 'SPIN'}
               </button>
               
+              {/* Botão AUTO SPIN */}
+              <button
+                className={`auto-spin-button ${isAutoSpinning ? 'auto-spinning' : ''}`}
+                onClick={isAutoSpinning ? stopAutoSpin : startAutoSpin}
+                disabled={balance < betAmount} // Desabilita apenas se não tiver saldo, SEMPRE CLICÁVEL se auto-spin ativo
+              >
+                {isAutoSpinning ? 'PARAR AUTO' : 'AUTO SPIN'}
+              </button>
+
+              {/* Painel de ajuste de saldo */}
               <div className="adjust-balance-panel">
                 <input
                   type="number"
@@ -245,6 +332,7 @@ function SlotsPage() {
                 </button>
               </div>
 
+              {/* Painel de ajuste de aposta */}
               <div className="adjust-bet-panel">
                 <input
                   type="number"
@@ -324,7 +412,7 @@ function SlotsPage() {
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
-                {/* NOVO: Porcentagem de Derrotas abaixo do gráfico */}
+                {/* Porcentagem de Derrotas abaixo do gráfico */}
                 <p className="loss-percentage">Porcentagem de Derrotas: <strong>{lossRate}%</strong></p>
             </div>
           </div>

@@ -112,14 +112,13 @@ h2 {
 
 .info-panel {
   background-color: #222;
-  padding: 10px 15px;
   border-radius: 8px;
   margin-bottom: 20px;
   border: 1px solid #444;
 }
 
 .balance {
-  font-size: 1.5em;
+  font-size: 1em;
   color: #00ff00;
   font-weight: bold;
   margin-bottom: 3px;
@@ -127,12 +126,13 @@ h2 {
 
 .bet {
   font-size: 1em;
-  color: #aaa;
+  font-weight: bold;
+  color: #007bff;
   margin-top: 0;
 }
 
 .message {
-  font-size: 1.4em;
+  font-size: 1.2em;
   font-weight: bold;
   margin-top: 15px;
   min-height: 1.4em;
@@ -162,7 +162,7 @@ h2 {
 .add-credits-button {
   background-color: #dc3545;
   color: white;
-  padding: 15px 30px;
+  padding: 10px 30px;
   border: none;
   border-radius: 8px;
   font-size: 1.5em;
@@ -191,7 +191,7 @@ h2 {
 }
 
 .add-credits-button:hover {
-  background-color: #0056b3;
+  background-color: #007bff;
 }
 
 
@@ -310,14 +310,15 @@ h2 {
   top: 0;
 }
 
-/* --- ESTILOS PARA O PAINEL DE AJUSTE DE SALDO E APOSSTA --- */
+/* --- ESTILOS PARA O PAINEL DE AJUSTE DE SALDO E APOSTA --- */
 .adjust-balance-panel,
 .adjust-bet-panel {
+  margin-block: -5px;
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 80%;
-  max-width: 320px;
+  width: 95%;
+  max-width: 500px;
   background-color: #222;
   padding: 10px 15px;
   border-radius: 8px;
@@ -347,6 +348,7 @@ h2 {
 }
 
 .adjust-button {
+  
   flex-shrink: 0;
   width: 70px;
   text-align: center;
@@ -537,4 +539,66 @@ h2 {
   .stats-summary p {
     font-size: 1em;
   }
+}
+
+/* --- Estilo para o botão SPIN (já existente, mas para comparação) --- */
+.spin-button {
+  background-color: #dc3545; /* Vermelho padrão */
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.5em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  width: 80%;
+  max-width: 250px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.spin-button:hover:not(:disabled) {
+  background-color: #c82333;
+  transform: translateY(-2px);
+}
+
+.spin-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* --- NOVO ESTILO: Botão Auto Spin --- */
+.auto-spin-button {
+  margin-bottom: 10px;
+  background-color: #007bff; /* Azul padrão para Auto Spin */
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.5em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  width: 80%;
+  max-width: 250px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.auto-spin-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+/* Estilo quando o Auto Spin está ATIVO */
+.auto-spin-button.auto-spinning {
+  background-color: #ffc107; /* Amarelo quando ativo */
+  color: #333; /* Texto escuro para contraste no amarelo */
+  box-shadow: 0 5px 15px rgba(255, 193, 7, 0.5); /* Sombra amarela */
+}
+
+/* Estilo para quando o botão está desabilitado */
+.auto-spin-button:disabled {
+  background-color: #6c757d; /* Cinza desabilitado */
+  cursor: not-allowed;
+  opacity: 0.7;
 }
