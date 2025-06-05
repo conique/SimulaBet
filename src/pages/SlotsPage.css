@@ -1,5 +1,3 @@
-/* src/pages/SlotsPage.css */
-
 .slots-page-container {
   display: flex;
   flex-direction: column;
@@ -10,92 +8,57 @@
   min-height: calc(100vh - var(--header-height, 0px) - var(--footer-height, 0px));
 }
 
-/* --- Layout principal de 3 colunas --- */
 .main-game-layout {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  /* Três colunas de largura IGUAL */
   gap: 30px;
-  /* Espaçamento entre as colunas */
   max-width: 1200px;
   width: 100%;
   padding: 20px;
-  /* Padding externo da grade */
   box-sizing: border-box;
 }
 
-/* Estilos para as COLUNAS (os blocos principais) */
 .left-column,
 .center-column,
 .right-column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Centraliza conteúdo horizontalmente dentro da coluna */
   background-color: #333;
-  /* Fundo do bloco da coluna */
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   justify-content: flex-start;
-  /* Todos começam do topo */
   padding: 20px;
-  /* NOVO: Padding interno para as colunas, criando o espaço "cinza mais claro" */
   box-sizing: border-box;
 }
 
-
-/* --- ESTILOS DO CONTEÚDO DENTRO DOS BLOCOS (os "sub-blocos" mais escuros) --- */
 .slot-machine-content,
 .paytable,
 .statistics-panel {
   text-align: center;
   width: 100%;
-  /* Ocupa 100% da largura da coluna pai (ajustada pelo max-width abaixo) */
   box-sizing: border-box;
-
-  /* --- MUDANÇAS AQUI: Diminuir largura e centralizar --- */
   max-width: 320px;
-  /* NOVO: Largura máxima para esses blocos internos */
   margin: 0 auto;
-  /* NOVO: Centraliza o bloco dentro da coluna */
-
   padding: 30px;
-  /* Mantém o padding interno para o conteúdo de cada bloco */
-  /* Removido margin-top/bottom pois o gap dos controles e o padding da coluna já cuidam */
   border: none;
-  /* Garante que não haja borda aqui */
   background-color: #282828;
-  /* NOVO: Cor de fundo mais escura para o paytable e statistics-panel */
   border-radius: 12px;
-  /* NOVO: Bordas arredondadas para esses blocos internos */
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-  /* NOVO: Sombra interna para profundidade */
 }
 
-
 h1 {
-  /* Removido para que não cause conflito e o novo h2 controle */
-  /* ... (restos dos estilos antigos de h1, se houver) ... */
   display: none;
-  /* Esconde o h1 antigo se ele ainda for renderizado por algum motivo */
 }
 
 h2 {
-  /* Aplica a todos os h2, incluindo o do simulador de slot */
   color: #f7d700;
-  /* Mesma cor dourada */
   margin-top: 0;
-  /* Alinhamento ao topo */
   margin-bottom: 25px;
-  /* Margem inferior padrão */
   font-size: 2em;
-  /* Tamanho da fonte que você queria igualar */
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
-  /* Sombra de texto */
   text-align: center;
-  /* Centralizado */
   width: 100%;
-  /* Ocupa a largura total para centralizar */
   box-sizing: border-box;
   padding-left: 0;
   margin-left: 0;
@@ -111,10 +74,35 @@ h2 {
 }
 
 .info-panel {
-  background-color: #222;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 10px 15px;
   border-radius: 8px;
-  margin-bottom: 20px;
-  border: 1px solid #444;
+  margin-top: 10px;
+  font-size: 1em;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px #000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.messageslot {
+  font-weight: bold;
+  width: 100%;
+  max-width: 600px;
+  padding: 12px 15px;
+  background-color: rgba(255, 235, 59, 0.85);
+  color: #000000;
+  border-radius: 8px;
+  text-align: center;
+  box-sizing: border-box;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.25);
+  line-height: 1.4;
+  margin-top: 10px;
 }
 
 .balance {
@@ -131,13 +119,6 @@ h2 {
   margin-top: 0;
 }
 
-.message {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-top: 15px;
-  min-height: 1.4em;
-}
-
 .message.win-text {
   color: #00ff00;
 }
@@ -147,9 +128,8 @@ h2 {
 }
 
 .message:not(.win-text):not(.lose-text) {
-  color: #ffd700;
+  color: #212121;
 }
-
 
 .controls {
   display: flex;
@@ -193,8 +173,6 @@ h2 {
 .add-credits-button:hover {
   background-color: #007bff;
 }
-
-
 
 .paytable-grid {
   display: grid;
@@ -248,7 +226,6 @@ h2 {
 .paytable-grid>div:nth-child(3n+1) {
   border-left: 1px solid #444;
 }
-
 
 .paytable-item .item-name {
   font-size: 1.1em;
@@ -310,7 +287,6 @@ h2 {
   top: 0;
 }
 
-/* --- ESTILOS PARA O PAINEL DE AJUSTE DE SALDO E APOSTA --- */
 .adjust-balance-panel,
 .adjust-bet-panel {
   margin-block: -5px;
@@ -348,7 +324,6 @@ h2 {
 }
 
 .adjust-button {
-  
   flex-shrink: 0;
   width: 70px;
   text-align: center;
@@ -369,71 +344,49 @@ h2 {
   transform: translateY(-1px);
 }
 
-/* --- NOVOS ESTILOS PARA O PAINEL DE ESTATÍSTICAS E GRÁFICOS --- */
 .statistics-panel {
   border: 1px solid #444;
-  /* Mantém a borda individual */
   text-align: center;
   width: 100%;
   box-sizing: border-box;
   padding: 0;
-  /* Removido padding, agora os blocos internos gerenciam */
   background-color: transparent;
-  /* Fundo transparente */
   box-shadow: none;
-  /* Removida sombra */
   border: none;
-  /* Removida borda */
 }
 
-/* NOVO: Estilo para cada bloco individual de estatística */
 .stats-block {
   background-color: #282828;
-  /* Fundo do bloco individual */
   padding: 25px 20px 20px 20px;
-  /* Ajustado padding-top */
   border-radius: 12px;
-  /* Borda arredondada */
   margin-bottom: 20px;
-  /* Espaçamento entre os blocos */
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-  /* Sombra interna */
   width: 100%;
-  /* Ocupa a largura total da coluna */
   box-sizing: border-box;
   text-align: center;
 }
 
 .stats-block:last-child {
   margin-bottom: 0;
-  /* Remove margem do último bloco */
 }
 
-/* NOVO: Estilo para h2 dentro de statistics-panel */
 .statistics-panel h2 {
   color: #f7d700;
   margin-top: 0;
-  /* Garante que o H2 esteja no topo do padding do stats-block */
   margin-bottom: 25px;
-  /* Margem padrão para h2 */
   font-size: 2em;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
   text-align: center;
 }
 
-
-/* NOVO: Estilo para h3 dentro de stats-block (Resumo, Histórico, Vitórias vs Derrotas) */
 .stats-block h3 {
   color: #f7d700;
   margin-top: 0;
-  /* Garante que o H3 esteja no topo do padding do stats-block */
   margin-bottom: 15px;
-  /* Margem inferior padrão para h3 */
   font-size: 1.6em;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
   text-align: center;
   width: 100%;
-  /* Para que o text-align:center funcione bem */
   box-sizing: border-box;
 }
 
@@ -459,11 +412,6 @@ h2 {
   margin-top: 20px;
 }
 
-/* Removido charts-container h3, agora stats-block h3 controla todos */
-/* .charts-container h3 { ... } */
-
-
-/* Estilos para tooltips e legendas do Recharts */
 .recharts-default-tooltip {
   background-color: #333 !important;
   border: 1px solid #555 !important;
@@ -479,7 +427,6 @@ h2 {
   color: #ccc !important;
 }
 
-/* Cores específicas para os elementos do gráfico de linha (eixos, grade) */
 .recharts-cartesian-grid line {
   stroke: #444;
 }
@@ -494,7 +441,6 @@ h2 {
   fill: #ccc;
 }
 
-/* --- MEDIA QUERIES PARA RESPONSIVIDADE (Celulares/Tablets) --- */
 @media (max-width: 992px) {
   .main-game-layout {
     grid-template-columns: 1fr;
@@ -507,7 +453,6 @@ h2 {
     padding: 0;
   }
 
-  /* Ajusta a largura máxima para que ocupem mais espaço em telas pequenas */
   .slot-machine-content,
   .paytable,
   .statistics-panel {
@@ -527,11 +472,9 @@ h2 {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 
-  /* NOVO: Ajuste para os h2 e h1 em telas menores */
   .paytable h2,
   .statistics-panel h2,
   h1 {
-    /* Este seletor agora inclui h1 */
     font-size: 1.8em;
   }
 
@@ -541,9 +484,8 @@ h2 {
   }
 }
 
-/* --- Estilo para o botão SPIN (já existente, mas para comparação) --- */
 .spin-button {
-  background-color: #dc3545; /* Vermelho padrão */
+  background-color: #dc3545;
   color: white;
   padding: 15px 30px;
   border: none;
@@ -568,10 +510,9 @@ h2 {
   opacity: 0.7;
 }
 
-/* --- NOVO ESTILO: Botão Auto Spin --- */
 .auto-spin-button {
   margin-bottom: 10px;
-  background-color: #007bff; /* Azul padrão para Auto Spin */
+  background-color: #007bff;
   color: white;
   padding: 15px 30px;
   border: none;
@@ -589,16 +530,14 @@ h2 {
   transform: translateY(-2px);
 }
 
-/* Estilo quando o Auto Spin está ATIVO */
 .auto-spin-button.auto-spinning {
-  background-color: #ffc107; /* Amarelo quando ativo */
-  color: #333; /* Texto escuro para contraste no amarelo */
-  box-shadow: 0 5px 15px rgba(255, 193, 7, 0.5); /* Sombra amarela */
+  background-color: #ffc107;
+  color: #333;
+  box-shadow: 0 5px 15px rgba(255, 193, 7, 0.5);
 }
 
-/* Estilo para quando o botão está desabilitado */
 .auto-spin-button:disabled {
-  background-color: #6c757d; /* Cinza desabilitado */
+  background-color: #6c757d;
   cursor: not-allowed;
   opacity: 0.7;
 }

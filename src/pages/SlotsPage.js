@@ -36,16 +36,14 @@ function SlotsPage() {
 
   // Inicializa o histórico com "Giro 0"
   const [balanceHistory, setBalanceHistory] = useState([
-    { name: 'Giro 0', balance: 1000, profit: 0 } 
+    { name: 'Giro 0', balance: 1000, profit: 0 }
   ]);
   const [houseProfit, setHouseProfit] = useState(0); // Lucro/prejuízo acumulado da casa
 
-  // --- NOVOS ESTADOS PARA AUTO SPIN ---
   const [isAutoSpinning, setIsAutoSpinning] = useState(false);
   const autoSpinIntervalId = useRef(null);
 
 
-  // Efeito para limpar timeouts/intervals ao desmontar o componente
   useEffect(() => {
     return () => {
       if (spinningTimeout.current) {
@@ -58,10 +56,10 @@ function SlotsPage() {
   }, []);
 
   const spin = () => {
-    if (isSpinning) { 
-        setMessage('Giro anterior ainda em andamento...');
-        return; 
-    } 
+    if (isSpinning) {
+      setMessage('Giro anterior ainda em andamento...');
+      return;
+    }
 
     if (balance < betAmount) {
       setMessage('Saldo insuficiente! Adicione mais créditos para continuar.');
@@ -73,18 +71,14 @@ function SlotsPage() {
 
     setReelHighlightType('');
     setIsSpinning(true);
-    
-    // Deduz a aposta
-    setBalance(prevBalance => prevBalance - betAmount); 
-    setTotalMoneySpent(prevSpent => prevSpent + betAmount); // Registra dinheiro gasto
-    
-    // --- MUDANÇA AQUI: Captura o próximo número do giro NO MOMENTO DA ATUALIZAÇÃO ---
-    let currentSpinNumber; // Declara a variável aqui
+    setBalance(prevBalance => prevBalance - betAmount);
+    setTotalMoneySpent(prevSpent => prevSpent + betAmount);
+
+    let currentSpinNumber;
     setTotalSpins(prevSpins => {
-      currentSpinNumber = prevSpins + 1; // Atribui o valor que será o novo totalSpins
-      return currentSpinNumber; // Retorna o novo valor para o estado
+      currentSpinNumber = prevSpins + 1;
+      return currentSpinNumber;
     });
-    // Agora, 'currentSpinNumber' conterá o número do giro que ESTÁ COMEÇANDO.
 
     setMessage('Girando...');
 
@@ -93,57 +87,50 @@ function SlotsPage() {
       Math.floor(Math.random() * symbols.length),
       Math.floor(Math.random() * symbols.length),
     ];
-    
+
     setResults(newResults);
 
     clearTimeout(spinningTimeout.current);
     spinningTimeout.current = setTimeout(() => {
-        // --- MUDANÇA AQUI: Passa 'currentSpinNumber' para a função de lógica ---
-        handleSpinResultLogic(currentSpinNumber, newResults[0], newResults[1], newResults[2]);
-        setIsSpinning(false);
+      handleSpinResultLogic(currentSpinNumber, newResults[0], newResults[1], newResults[2]);
+      setIsSpinning(false);
 
-        // Lógica do auto-spin para agendar o próximo giro
-        // Usa o saldo ATUALIZADO (do estado 'balance') para verificar a condição.
-        if (isAutoSpinning && balance >= betAmount) { 
-            setTimeout(() => {
-                spin();
-            }, 1000); 
-        } else if (isAutoSpinning && balance < betAmount) {
-            stopAutoSpin();
-            setMessage('Auto Spin parado: saldo insuficiente para o próximo giro.');
-        }
+      if (isAutoSpinning && balance >= betAmount) {
+        setTimeout(() => {
+          spin();
+        }, 1000);
+      } else if (isAutoSpinning && balance < betAmount) {
+        stopAutoSpin();
+        setMessage('Auto Spin parado: saldo insuficiente para o próximo giro.');
+      }
     }, 2500);
   };
 
-  // --- NOVA FUNÇÃO PARA CONSOLIDAR O RESULTADO DO GIRO E ATUALIZAR TODOS OS ESTADOS ---
-  // Agora recebe 'spinNumber' diretamente como argumento
   const handleSpinResultLogic = (spinNumber, res1, res2, res3) => {
     const winAmount = calculateWinAmount(res1, res2, res3);
     const profitLossThisSpin = betAmount - winAmount;
 
-    // Garante que o balance seja atualizado com o ganho
-    setBalance(prevBalance => prevBalance + winAmount); 
+    setBalance(prevBalance => prevBalance + winAmount);
     setTotalMoneyWon(prevWon => prevWon + winAmount);
     setHouseProfit(prevProfit => prevProfit + profitLossThisSpin);
-    
-    const isWinResult = winAmount > 0; 
+
+    const isWinResult = winAmount > 0;
     if (isWinResult) {
       setWinCount(prevCount => prevCount + 1);
     } else {
       setLoseCount(prevCount => prevCount + 1);
     }
 
-    // --- ATUALIZA O balanceHistory AQUI, AGORA COM O 'spinNumber' CORRETO ---
     setBalanceHistory(prevHistory => {
-        const lastProfit = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1].profit : 0;
-        return [
-            ...prevHistory,
-            { 
-                name: `Giro ${spinNumber}`, // <--- USA O 'spinNumber' PASSADO COMO ARGUMENTO
-                balance: balance + winAmount, // 'balance' já foi atualizado com o ganho neste ciclo de render
-                profit: lastProfit + profitLossThisSpin
-            }
-        ];
+      const lastProfit = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1].profit : 0;
+      return [
+        ...prevHistory,
+        {
+          name: `Giro ${spinNumber}`,
+          balance: balance + winAmount,
+          profit: lastProfit + profitLossThisSpin
+        }
+      ];
     });
 
     setMessageAndHighlight(winAmount, res1, res2, res3);
@@ -160,10 +147,10 @@ function SlotsPage() {
     return 0;
   };
 
-  const setMessageAndHighlight = (winAmount, res1, res2, res3) => { 
+  const setMessageAndHighlight = (winAmount, res1, res2, res3) => {
     let winMessage = 'Você perdeu! Tente novamente.';
     let highlightType = 'lose';
-    
+
     if (winAmount > 0) {
       const winningSymbolIndex = res1;
       const { name } = paytable[winningSymbolIndex];
@@ -171,9 +158,9 @@ function SlotsPage() {
       highlightType = 'win';
     } else {
       if (
-        (res1 === res2 && res1 !== res3) || 
-        (res1 === res3 && res1 !== res2) || 
-        (res2 === res3 && res2 !== res1)    
+        (res1 === res2 && res1 !== res3) ||
+        (res1 === res3 && res1 !== res2) ||
+        (res2 === res3 && res2 !== res1)
       ) {
         winMessage = 'Quase lá... Tente novamente!';
         highlightType = 'lose';
@@ -182,18 +169,17 @@ function SlotsPage() {
     setMessage(winMessage);
     setReelHighlightType(highlightType);
   };
-  
+
   const handleAdjustBalance = () => {
     const amount = parseInt(adjustAmount);
     if (!isNaN(amount)) {
       setBalance(prevBalance => {
         const newBalance = prevBalance + amount;
-        // MUDANÇA AQUI: name para ajuste de saldo agora usa o totalSpins atual + ' (Ajuste)'
         setBalanceHistory(prevHistory => {
           const lastProfit = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1].profit : 0;
           return [
             ...prevHistory,
-            { name: `Giro ${totalSpins} (Ajuste)`, balance: newBalance, profit: lastProfit } 
+            { name: `Giro ${totalSpins} (Ajuste)`, balance: newBalance, profit: lastProfit }
           ];
         });
         return newBalance;
@@ -201,7 +187,7 @@ function SlotsPage() {
       setMessage(`${amount >= 0 ? 'Adicionado' : 'Removido'} ${Math.abs(amount)} créditos.`);
       setAdjustAmount('');
       setReelHighlightType('');
-      if (isAutoSpinning) stopAutoSpin(); 
+      if (isAutoSpinning) stopAutoSpin();
     } else {
       setMessage('Digite um valor numérico para ajustar o saldo.');
     }
@@ -219,7 +205,6 @@ function SlotsPage() {
     }
   };
 
-  // --- FUNÇÕES PARA AUTO SPIN ---
   const startAutoSpin = () => {
     if (balance < betAmount) {
       setMessage('Saldo insuficiente para iniciar Auto Spin!');
@@ -228,28 +213,28 @@ function SlotsPage() {
     if (isAutoSpinning) return;
 
     setIsAutoSpinning(true);
-    spin(); 
+    spin();
 
     autoSpinIntervalId.current = setInterval(() => {
-        if (!isSpinning && balance >= betAmount) {
-            spin(); 
-        } else if (balance < betAmount) {
-            stopAutoSpin();
-            setMessage('Auto Spin parado: saldo insuficiente.');
-        }
-    }, 4000); 
+      if (!isSpinning && balance >= betAmount) {
+        spin();
+      } else if (balance < betAmount) {
+        stopAutoSpin();
+        setMessage('Auto Spin parado: saldo insuficiente.');
+      }
+    }, 4000);
   };
 
   const stopAutoSpin = () => {
     setIsAutoSpinning(false);
     if (autoSpinIntervalId.current) {
-        clearInterval(autoSpinIntervalId.current);
-        autoSpinIntervalId.current = null;
+      clearInterval(autoSpinIntervalId.current);
+      autoSpinIntervalId.current = null;
     }
     if (spinningTimeout.current) {
-        clearTimeout(spinningTimeout.current);
-        spinningTimeout.current = null;
-        setIsSpinning(false);
+      clearTimeout(spinningTimeout.current);
+      spinningTimeout.current = null;
+      setIsSpinning(false);
     }
     setMessage('Auto Spin Parado.');
   };
@@ -272,7 +257,6 @@ function SlotsPage() {
   return (
     <div className="slots-page-container">
       <div className="main-game-layout">
-        {/* COLUNA ESQUERDA: Tabela de Pagamento */}
         <div className="left-column">
           <div className="paytable">
             <h2 className="section-main-title">Tabela de Pagamento</h2>
@@ -298,7 +282,6 @@ function SlotsPage() {
           </div>
         </div>
 
-        {/* COLUNA DO MEIO: O Jogo de Slot */}
         <div className="center-column">
           <div className="slot-machine-content">
             <h2 className="section-main-title">Simulador de Slot</h2>
@@ -310,32 +293,31 @@ function SlotsPage() {
             </div>
 
             <div className="info-panel">
-              <p className="balance">Saldo: ${balance}</p>
-              <p className="bet">Aposta: ${betAmount}</p>
-              <p className={`message ${reelHighlightType === 'win' ? 'win-text' : reelHighlightType === 'lose' ? 'lose-text' : ''}`}>
-                {message}
-              </p>
+              <span className="info-text">Saldo: ${balance}</span>
+              <span className="info-text">Aposta: ${balance}</span>
             </div>
 
+            <p className={`messageslot ${reelHighlightType === 'win' ? 'win-text' : reelHighlightType === 'lose' ? 'lose-text' : ''}`}>
+              {message}
+            </p>
+
             <div className="controls">
-              {/* Botão SPIN (Manual) */}
               <button
                 className="spin-button"
                 onClick={spin}
-                disabled={isSpinning || balance < betAmount || isAutoSpinning} // Desabilita se auto-spinning
+                disabled={isSpinning || balance < betAmount || isAutoSpinning}
               >
                 {isSpinning ? 'GIRANDO...' : 'SPIN'}
               </button>
-              
-              {/* Botão AUTO SPIN */}
+
               <button
                 className={`auto-spin-button ${isAutoSpinning ? 'auto-spinning' : ''}`}
                 onClick={isAutoSpinning ? stopAutoSpin : startAutoSpin}
+                disabled={balance < betAmount}
               >
                 {isAutoSpinning ? 'PARAR AUTO' : 'AUTO SPIN'}
               </button>
 
-              {/* Painel de ajuste de saldo */}
               <div className="adjust-balance-panel">
                 <input
                   type="number"
@@ -349,7 +331,6 @@ function SlotsPage() {
                 </button>
               </div>
 
-              {/* Painel de ajuste de aposta */}
               <div className="adjust-bet-panel">
                 <input
                   type="number"
@@ -366,69 +347,65 @@ function SlotsPage() {
           </div>
         </div>
 
-        {/* COLUNA DIREITA: Estatísticas e Gráficos */}
         <div className="right-column">
           <div className="statistics-panel">
             <h2 className="section-main-title">Estatísticas do Jogo</h2>
-            {/* Bloco para Resumo de Estatísticas */}
             <div className="stats-block">
-                <h3>Resumo</h3>
-                <div className="stats-summary">
-                    <p><strong>Giros Totais:</strong> {totalSpins}</p>
-                    <p><strong>Dinheiro Gasto:</strong> ${totalMoneySpent}</p>
-                    <p><strong>Dinheiro Ganho:</strong> ${totalMoneyWon}</p>
-                    <p><strong>Lucro Líquido (Jogador):</strong> ${netProfitPlayer}</p>
-                    <p><strong>Taxa de Vitória:</strong> {winRate}%</p>
-                    <p><strong>Lucro da Casa:</strong> ${houseProfit}</p>
-                    <p><strong>Margem da Casa:</strong> {houseEdge}%</p>
-                </div>
+              <h3>Resumo</h3>
+              <div className="stats-summary">
+                <p><strong>Giros Totais:</strong> {totalSpins}</p>
+                <p><strong>Dinheiro Gasto:</strong> ${totalMoneySpent}</p>
+                <p><strong>Dinheiro Ganho:</strong> ${totalMoneyWon}</p>
+                <p><strong>Lucro Líquido (Jogador):</strong> ${netProfitPlayer}</p>
+                <p><strong>Taxa de Vitória:</strong> {winRate}%</p>
+                <p><strong>Lucro da Casa:</strong> ${houseProfit}</p>
+                <p><strong>Margem da Casa:</strong> {houseEdge}%</p>
+              </div>
             </div>
 
-            {/* Bloco para Histórico de Saldo */}
             <div className="stats-block">
-                <h3>Histórico de Saldo e Lucro da Casa</h3>
-                <div className="charts-container">
-                    <ResponsiveContainer width="100%" height={200}>
-                        <LineChart data={balanceHistory} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                            <XAxis dataKey="name" stroke="#ccc" tick={{ fontSize: 10 }} />
-                            <YAxis stroke="#ccc" tick={{ fontSize: 10 }} /> 
-                            <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} itemStyle={{ color: '#fff' }} />
-                            <Legend wrapperStyle={{ color: '#fff' }} />
-                            <Line type="monotone" dataKey="balance" stroke="#00C49F" name="Saldo" dot={false} />
-                            <Line type="monotone" dataKey="profit" stroke="#FFBB28" name="Lucro/Prejuízo Casa" dot={false} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </div>
+              <h3>Histórico de Saldo e Lucro da Casa</h3>
+              <div className="charts-container">
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={balanceHistory} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                    <XAxis dataKey="name" stroke="#ccc" tick={{ fontSize: 10 }} />
+                    <YAxis stroke="#ccc" tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} itemStyle={{ color: '#fff' }} />
+                    <Legend wrapperStyle={{ color: '#fff' }} />
+                    <Line type="monotone" dataKey="balance" stroke="#00C49F" name="Saldo" dot={false} />
+                    <Line type="monotone" dataKey="profit" stroke="#FFBB28" name="Lucro/Prejuízo Casa" dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            {/* Bloco para Vitórias vs Derrotas */}
             <div className="stats-block">
-                <h3>Vitórias vs Derrotas</h3>
-                <div className="charts-container">
-                    <ResponsiveContainer width="100%" height={150}>
-                        <PieChart>
-                            <Pie
-                                data={pieChartData}
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={60}
-                                fill="#8884d8"
-                                dataKey="value"
-                                labelLine={false}                            >
-                                {
-                                    pieChartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))
-                                }
-                            </Pie>
-                            <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} itemStyle={{ color: '#fff' }} />
-                            <Legend wrapperStyle={{ color: '#fff' }} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-                {/* Porcentagem de Derrotas abaixo do gráfico */}
-                <p className="loss-percentage">Porcentagem de Derrotas: <strong>{lossRate}%</strong></p>
+              <h3>Vitórias vs Derrotas</h3>
+              <div className="charts-container">
+                <ResponsiveContainer width="100%" height={150}>
+                  <PieChart>
+                    <Pie
+                      data={pieChartData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={60}
+                      fill="#8884d8"
+                      dataKey="value"
+                      labelLine={false}
+                    >
+                      {
+                        pieChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))
+                      }
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} itemStyle={{ color: '#fff' }} />
+                    <Legend wrapperStyle={{ color: '#fff' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="loss-percentage">Porcentagem de Derrotas: <strong>{lossRate}%</strong></p>
             </div>
           </div>
         </div>

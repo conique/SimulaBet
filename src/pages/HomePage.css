@@ -3,10 +3,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-grow: 1; /* Ocupa o espaço restante entre header e footer */
+  flex-grow: 1;
   padding: 40px 20px;
   text-align: center;
-  background-color: #282c34; /* Fundo escuro */
+  background-color: #282c34;
   color: #fff;
 }
 
@@ -25,9 +25,9 @@
 
 .game-options {
   display: flex;
-  flex-wrap: wrap; /* Permite que os cards quebrem a linha em telas menores */
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 30px; /* Espaço entre os cards */
+  gap: 30px;
   margin-bottom: 50px;
 }
 
@@ -35,27 +35,27 @@
   background-color: #333;
   border-radius: 15px;
   padding: 30px;
-  width: 280px; /* Largura fixa para os cards */
+  width: 280px;
   height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  text-decoration: none; /* Remove sublinhado do link */
+  text-decoration: none;
   color: #fff;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   transition: transform 0.3s ease, background-color 0.3s ease;
-  position: relative; /* Para o "Em Breve" */
+  position: relative;
 }
 
 .game-card:hover {
-  transform: translateY(-8px) scale(1.02); /* Efeito de elevação ao passar o mouse */
+  transform: translateY(-8px) scale(1.02);
   background-color: #444;
 }
 
 .game-card h2 {
   font-size: 2em;
-  color: #00ff00; /* Verde para títulos de jogos */
+  color: #00ff00;
   margin-top: 0;
   margin-bottom: 10px;
 }
@@ -70,7 +70,7 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: #dc3545; /* Vermelho */
+  background-color: #dc3545;
   color: white;
   padding: 5px 10px;
   border-radius: 5px;
@@ -85,17 +85,16 @@
   margin-top: 50px;
 }
 
-/* Responsividade básica para telas menores */
 @media (max-width: 768px) {
   .homepage-container h1 {
     font-size: 2.2em;
   }
   .game-options {
-    flex-direction: column; /* Cards em coluna em telas menores */
+    flex-direction: column;
     align-items: center;
   }
   .game-card {
-    width: 90%; /* Ocupa mais largura */
+    width: 90%;
     max-width: 350px;
   }
 }

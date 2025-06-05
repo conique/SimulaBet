@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; // Importe Link para navegação
-import './HomePage.css'; // Crie este arquivo CSS para a página inicial
+import { Link } from 'react-router-dom';
+import './HomePage.css';
 
 function HomePage() {
   return (
