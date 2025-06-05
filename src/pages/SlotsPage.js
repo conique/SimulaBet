@@ -16,6 +16,10 @@ function SlotsPage() {
     5: { payout: 10, name: 'Setes' },
   };
 
+  useEffect(() => {
+      document.title = "Slots";
+    }, []);
+
   const [results, setResults] = useState([0, 0, 0]);
   const [balance, setBalance] = useState(1000);
   const [betAmount, setBetAmount] = useState(10);
@@ -294,7 +298,7 @@ function SlotsPage() {
 
             <div className="info-panel">
               <span className="info-text">Saldo: ${balance}</span>
-              <span className="info-text">Aposta: ${balance}</span>
+              <span className="info-text">Aposta: ${betAmount}</span>
             </div>
 
             <p className={`messageslot ${reelHighlightType === 'win' ? 'win-text' : reelHighlightType === 'lose' ? 'lose-text' : ''}`}>

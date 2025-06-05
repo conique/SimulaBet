@@ -10,7 +10,7 @@
 
 .main-game-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1.5fr 1fr;
   gap: 30px;
   max-width: 1200px;
   width: 100%;
@@ -32,6 +32,11 @@
   box-sizing: border-box;
 }
 
+.center-column{
+  max-width: 800px;
+  width: 600px;
+}
+
 .wheel-area{
   text-align: center;
   box-sizing: border-box;
@@ -44,6 +49,7 @@
 }
 
 .chips-and-controls {
+      padding: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;

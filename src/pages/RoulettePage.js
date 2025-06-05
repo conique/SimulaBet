@@ -53,10 +53,12 @@ function RoulettePage() {
   const [winningNumberData, setWinningNumberData] = useState(null);
   const [lastWin, setLastWin] = useState(0);
   const [message, setMessage] = useState('Selecione uma ficha e faça suas apostas!');
+  const [adjustAmountInput, setAdjustAmountInput] = useState('');
+  const [newChipValueInput, setNewChipValueInput] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
 
   useEffect(() => {
-    document.title = "American Roulette Pro";
+    document.title = "Roleta Americana";
   }, []);
 
   const updateTotalBetAmount = useCallback(() => {
@@ -153,6 +155,31 @@ function RoulettePage() {
     }, 100);
   };
 
+  const handleAdjustBalance = () => {
+    if (isSpinning) return;
+    const amount = parseInt(adjustAmountInput);
+    if (!isNaN(amount)) {
+      setBalance(prevBalance => prevBalance + amount);
+      setMessage(`${amount >= 0 ? 'Adicionado' : 'Removido'} $${Math.abs(amount)} ao saldo.`);
+      setAdjustAmountInput('');
+    } else {
+      setMessage('Por favor, insira um valor numérico válido para ajustar o saldo.');
+    }
+  };
+
+  const handleSetSelectedChipValue = () => {
+    if (isSpinning) return;
+    const amount = parseInt(newChipValueInput);
+    if (!isNaN(amount) && CHIP_VALUES.includes(amount)) {
+      setSelectedChip(amount);
+      setMessage(`Ficha selecionada definida para $${amount}.`);
+      setNewChipValueInput('');
+    } else if (!isNaN(amount) && !CHIP_VALUES.includes(amount)) {
+      setMessage(`Valor de ficha $${amount} inválido. Valores permitidos: ${CHIP_VALUES.join(', ')}.`);
+    } else {
+      setMessage('Por favor, insira um valor numérico válido para a ficha.');
+    }
+  };
   const calculateWinnings = useCallback((theWinner) => {
     if (!theWinner) {
       console.error("calculateWinnings: Informação do número vencedor ausente.");
@@ -234,13 +261,14 @@ function RoulettePage() {
     }
     return `${betText}: $${bet.amount}`;
   };
-  
+
   return (
     <div className="roulette-page-container">
       <div className="main-game-layout">
         <div className="left-column">
 
           <div className="wheel-area">
+            <h2 className="section-main-title">Roleta Americana</h2>
             <Wheel
               spinning={isSpinning}
               winningNumber={winningNumberData ? winningNumberData.val : null}
@@ -288,19 +316,32 @@ function RoulettePage() {
                 Limpar Apostas
               </button>
             </div>
+            <div className="adjust-balance-panel">
+              <input
+                type="number"
+                value={adjustAmountInput}
+                onChange={(e) => setAdjustAmountInput(e.target.value)}
+                placeholder="Ajustar saldo (+/-)"
+                className="adjust-input"
+                disabled={isSpinning}
+              />
+              <button onClick={handleAdjustBalance} className="adjust-button" disabled={isSpinning}>
+                Saldo
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="center-column">
-
+          <h2 className="section-main-title">Mesa de Aposta</h2>
           <BettingTable
             onBet={placeBet}
             disabled={isSpinning}
             numberColors={WHEEL_NUMBER_COLORS}
           />
 
-          <div className="current-bets-box">
-            {Object.keys(currentBets).length > 0 && (
+          {Object.keys(currentBets).length > 0 && (
+            <div className="current-bets-box">
               <div className="current-bets-display-area">
                 <h4>Suas Apostas Atuais:</h4>
                 <ul className="current-bets-list">
@@ -319,10 +360,10 @@ function RoulettePage() {
                   ))}
                 </ul>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-    
+
 
         </div>
 
