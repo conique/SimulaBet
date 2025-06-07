@@ -376,4 +376,5 @@
   color: #00ff00;
   font-weight: bold;
   white-space: nowrap;
+  /* Evita quebra de linha no texto do payout */
 }
