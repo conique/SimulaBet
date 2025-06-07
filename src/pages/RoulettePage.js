@@ -1,8 +1,9 @@
 // src/pages/RoulettePage.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Wheel from '../components/Wheel';
 import BettingTable from '../components/BettingTable';
 import './RoulettePage.css';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const ROULETTE_NUMBERS_DATA = [
   { val: '0', color: 'green', column: null, dozen: null, half: null, isEven: null, row: 0 },
@@ -56,6 +57,19 @@ function RoulettePage() {
   const [adjustAmountInput, setAdjustAmountInput] = useState('');
   const [newChipValueInput, setNewChipValueInput] = useState('');
   const [isSpinning, setIsSpinning] = useState(false);
+  const spinNumberRef = useRef(0);
+
+  const [totalSpins, setTotalSpins] = useState(0);
+  const [totalMoneySpent, setTotalMoneySpent] = useState(0);
+  const [totalMoneyWon, setTotalMoneyWon] = useState(0);
+  const [winCount, setWinCount] = useState(0);
+  const [loseCount, setLoseCount] = useState(0);
+  const [balanceHistory, setBalanceHistory] = useState([
+    { name: 'Giro 0', balance: 1000, profit: 0 }
+  ]);
+  const [houseProfit, setHouseProfit] = useState(0);
+
+  const COLORS_PIE_CHART = ['#00C49F', '#FF8042'];
 
   useEffect(() => {
     document.title = "Roleta Americana";
@@ -144,6 +158,11 @@ function RoulettePage() {
       setMessage(`Aposta total mínima de $${MIN_TOTAL_TABLE_BET} não atingida. Apostas atuais: $${totalBetAmount}.`);
       return;
     }
+
+    const currentSpin = totalSpins + 1;
+    spinNumberRef.current = currentSpin;
+    setTotalSpins(currentSpin);
+    setTotalMoneySpent(prevSpent => prevSpent + totalBetAmount);
     setIsSpinning(true);
     setWinningNumberData(null);
     setLastWin(0);
@@ -159,7 +178,22 @@ function RoulettePage() {
     if (isSpinning) return;
     const amount = parseInt(adjustAmountInput);
     if (!isNaN(amount)) {
-      setBalance(prevBalance => prevBalance + amount);
+      setBalance(prevBalance => {
+        const newBalance = prevBalance + amount;
+        setBalanceHistory(prevHistory => {
+          const lastEntry = prevHistory[prevHistory.length - 1];
+          const lastKnownHouseProfit = lastEntry ? lastEntry.profit : 0;
+          return [
+            ...prevHistory,
+            {
+              name: `Ajuste ${totalSpins > 0 ? `(Pós Giro ${totalSpins})` : '(Inicial)'}`,
+              balance: newBalance,
+              profit: lastKnownHouseProfit
+            }
+          ];
+        });
+        return newBalance;
+      });
       setMessage(`${amount >= 0 ? 'Adicionado' : 'Removido'} $${Math.abs(amount)} ao saldo.`);
       setAdjustAmountInput('');
     } else {
@@ -180,13 +214,17 @@ function RoulettePage() {
       setMessage('Por favor, insira um valor numérico válido para a ficha.');
     }
   };
-  const calculateWinnings = useCallback((theWinner) => {
+
+  const calculateWinnings = useCallback((theWinner, currentSpinNumber) => {
     if (!theWinner) {
       console.error("calculateWinnings: Informação do número vencedor ausente.");
       setCurrentBets({});
       return;
     }
-    let roundTotalReturn = 0;
+
+    let roundPayout = 0;
+    let stakeReturnedOnWins = 0;
+
     for (const betKey in currentBets) {
       const bet = currentBets[betKey];
       let winMultiplier = 0;
@@ -219,25 +257,56 @@ function RoulettePage() {
         default: break;
       }
       if (winMultiplier > 0) {
-        roundTotalReturn += bet.amount + (bet.amount * winMultiplier);
+        roundPayout += (bet.amount * winMultiplier);
+        stakeReturnedOnWins += bet.amount;
       }
     }
-    const netGainOrLossThisRound = roundTotalReturn - totalBetAmount;
-    if (roundTotalReturn > 0) {
-      setBalance(prevBalance => prevBalance + roundTotalReturn);
-      setLastWin(netGainOrLossThisRound);
-      setMessage(`🎉 Ganhou! Número: ${theWinner.val} (${theWinner.color}). Retorno: $${roundTotalReturn} (Lucro/Prejuízo: $${netGainOrLossThisRound})`);
+
+    const totalReturnedToPlayerThisRound = roundPayout + stakeReturnedOnWins;
+    const playerNetGainOrLossThisRound = totalReturnedToPlayerThisRound - totalBetAmount;
+
+    if (roundPayout > 0) {
+      setWinCount(prev => prev + 1);
+      setTotalMoneyWon(prevWon => prevWon + roundPayout);
     } else {
-      setLastWin(-totalBetAmount);
+      if (totalBetAmount > 0) {
+        setLoseCount(prev => prev + 1);
+      }
+    }
+
+    const houseGainThisRound = totalBetAmount - totalReturnedToPlayerThisRound;
+    setHouseProfit(prevProfit => prevProfit + houseGainThisRound);
+
+    const newBalanceAfterSpin = balance + playerNetGainOrLossThisRound;
+    setBalanceHistory(prevHistory => {
+      const lastEntry = prevHistory[prevHistory.length - 1];
+      const lastCumulativeHouseProfit = lastEntry ? lastEntry.profit : 0;
+      return [
+        ...prevHistory,
+        {
+          name: `Giro ${currentSpinNumber}`,
+          balance: newBalanceAfterSpin,
+          profit: lastCumulativeHouseProfit + houseGainThisRound
+        }
+      ];
+    });
+
+    setBalance(prevBalance => prevBalance + playerNetGainOrLossThisRound);
+    setLastWin(playerNetGainOrLossThisRound);
+
+    if (totalReturnedToPlayerThisRound > 0) {
+      setMessage(`🎉 Ganhou! Número: ${theWinner.val} (${theWinner.color}). Retorno: $${totalReturnedToPlayerThisRound} (Lucro/Prejuízo Jogador: $${playerNetGainOrLossThisRound})`);
+    } else {
       setMessage(`Não foi desta vez. Número: ${theWinner.val} (${theWinner.color}).`);
     }
+
     setCurrentBets({});
-  }, [currentBets, totalBetAmount]);
+  }, [currentBets, totalBetAmount, balance]);
 
   useEffect(() => {
     if (isSpinning && winningNumberData) {
       const animationTimer = setTimeout(() => {
-        calculateWinnings(winningNumberData);
+        calculateWinnings(winningNumberData, spinNumberRef.current);
         setIsSpinning(false);
       }, SPIN_DURATION);
       return () => clearTimeout(animationTimer);
@@ -262,6 +331,16 @@ function RoulettePage() {
     return `${betText}: $${bet.amount}`;
   };
 
+  const winRate = totalSpins > 0 ? ((winCount / totalSpins) * 100).toFixed(2) : "0.00";
+  const netProfitPlayer = totalMoneyWon - totalMoneySpent;
+  const houseEdge = totalMoneySpent > 0 ? ((houseProfit / totalMoneySpent) * 100).toFixed(2) : "0.00";
+  const lossRate = totalSpins > 0 ? ((loseCount / totalSpins) * 100).toFixed(2) : "0.00";
+
+  const pieChartData = [];
+  if (winCount > 0) pieChartData.push({ name: 'Vitórias', value: winCount });
+  if (loseCount > 0) pieChartData.push({ name: 'Derrotas', value: loseCount });
+
+
   return (
     <div className="roulette-page-container">
       <div className="main-game-layout">
@@ -276,6 +355,93 @@ function RoulettePage() {
               numberColors={WHEEL_NUMBER_COLORS}
             />
           </div>
+
+          <div class="bet-category">
+            <h2>Inside Bets</h2>
+            <ul class="bet-list">
+              <li class="bet-item">
+                <div class="bet-info">
+                  <strong>Straight Up</strong> - Single Number
+                </div>
+                <span class="bet-payout">35 to 1</span>
+              </li>
+              <li class="bet-item">
+                <div class="bet-info">
+                  <strong>Split</strong> - Two Numbers
+                </div>
+                <span class="bet-payout">17 to 1</span>
+              </li>
+              <li class="bet-item">
+                <div class="bet-info">
+                  <strong>Street</strong> - Three Numbers
+                </div>
+                <span class="bet-payout">11 to 1</span>
+              </li>
+              <li class="bet-item">
+                <div class="bet-info">
+                  <strong>Corner</strong> - Four Numbers
+                </div>
+                <span class="bet-payout">8 to 1</span>
+              </li>
+              <li class="bet-item">
+                <div class="bet-info">
+                  <strong>0/00/1/2/3</strong> - Five Numbers
+                </div>
+                <span class="bet-payout">6 to 1</span>
+              </li>
+              <li class="bet-item">
+                <div class="bet-info">
+                  <strong>Six line</strong> - Six Numbers
+                </div>
+                <span class="bet-payout">5 to 1</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="bet-category">
+            <h2>Outside Bets</h2>
+            <ul class="bet-list">
+              <li class="bet-item">
+                <div class="bet-info">
+                  <strong>Dozen</strong> - Twelve Numbers
+                </div>
+                <span class="bet-payout">2 to 1</span>
+              </li>
+              <li class="bet-item">
+                <div class="bet-info">
+                  <strong>Column</strong> - Twelve Numbers
+                </div>
+                <span class="bet-payout">2 to 1</span>
+              </li>
+              <li class="bet-item">
+                <div class="bet-info">
+                  <strong>Low (1-18) or High (19-36)</strong>
+                </div>
+                <span class="bet-payout">1 to 1</span>
+              </li>
+              <li class="bet-item">
+                <div class="bet-info">
+                  <strong>Red or Black</strong> Numbers
+                </div>
+                <span class="bet-payout">1 to 1</span>
+              </li>
+              <li class="bet-item">
+                <div class="bet-info">
+                  <strong>Odd or Even</strong> Numbers
+                </div>
+                <span class="bet-payout">1 to 1</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="center-column">
+          <h2 className="section-main-title">Mesa de Aposta</h2>
+          <BettingTable
+            onBet={placeBet}
+            disabled={isSpinning}
+            numberColors={WHEEL_NUMBER_COLORS}
+          />
 
           <div className="info-panel">
             <span className="info-text">Saldo: ${balance.toLocaleString()}</span>
@@ -330,15 +496,6 @@ function RoulettePage() {
               </button>
             </div>
           </div>
-        </div>
-
-        <div className="center-column">
-          <h2 className="section-main-title">Mesa de Aposta</h2>
-          <BettingTable
-            onBet={placeBet}
-            disabled={isSpinning}
-            numberColors={WHEEL_NUMBER_COLORS}
-          />
 
           {Object.keys(currentBets).length > 0 && (
             <div className="current-bets-box">
@@ -362,21 +519,72 @@ function RoulettePage() {
               </div>
             </div>
           )}
-
-
-
         </div>
 
+        <div className="right-column">
+          <div className="statistics-panel">
+            <h2 className="section-main-title">Estatísticas do Jogo</h2>
+            <div className="stats-block">
+              <h3>Resumo</h3>
+              <div className="stats-summary">
+                <p><strong>Giros Totais:</strong> {totalSpins}</p>
+                <p><strong>Dinheiro Gasto:</strong> ${totalMoneySpent}</p>
+                <p><strong>Dinheiro Ganho:</strong> ${totalMoneyWon}</p>
+                <p><strong>Lucro Líquido (Jogador):</strong> ${netProfitPlayer}</p>
+                <p><strong>Taxa de Vitória:</strong> {winRate}%</p>
+                <p><strong>Lucro da Casa:</strong> ${houseProfit}</p>
+                <p><strong>Margem da Casa:</strong> {houseEdge}%</p>
+              </div>
+            </div>
 
-        <div className="right-column"> </div>
+            <div className="stats-block">
+              <h3>Histórico de Saldo e Lucro da Casa</h3>
+              <div className="charts-container">
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={balanceHistory} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                    <XAxis dataKey="name" stroke="#ccc" tick={{ fontSize: 10 }} />
+                    <YAxis stroke="#ccc" tick={{ fontSize: 10 }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} itemStyle={{ color: '#fff' }} />
+                    <Legend wrapperStyle={{ color: '#fff' }} />
+                    <Line type="monotone" dataKey="balance" stroke="#00C49F" name="Saldo" dot={false} />
+                    <Line type="monotone" dataKey="profit" stroke="#FFBB28" name="Lucro/Prejuízo Casa" dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-
-
-
+            <div className="stats-block">
+              <h3>Vitórias vs Derrotas</h3>
+              <div className="charts-container">
+                <ResponsiveContainer width="100%" height={150}>
+                  <PieChart>
+                    <Pie
+                      data={pieChartData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={60}
+                      fill="#8884d8"
+                      dataKey="value"
+                      labelLine={false}
+                    >
+                      {
+                        pieChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS_PIE_CHART[index % COLORS_PIE_CHART.length]} />
+                        ))
+                      }
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} itemStyle={{ color: '#fff' }} />
+                    <Legend wrapperStyle={{ color: '#fff' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="loss-percentage">Porcentagem de Derrotas: <strong>{lossRate}%</strong></p>
+            </div>
+          </div>
+        </div>
       </div>
-
     </div>
-
   );
 }
 
