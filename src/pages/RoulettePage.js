@@ -257,6 +257,7 @@ function RoulettePage() {
         default: break;
       }
       if (winMultiplier > 0) {
+        // O prêmio é apenas o lucro, o valor apostado deve ser devolvido junto
         roundPayout += (bet.amount * winMultiplier);
         stakeReturnedOnWins += bet.amount;
       }
@@ -268,30 +269,33 @@ function RoulettePage() {
     if (roundPayout > 0) {
       setWinCount(prev => prev + 1);
       setTotalMoneyWon(prevWon => prevWon + roundPayout);
+      // Corrigido: saldo recebe o valor total devolvido ao jogador (prêmio + aposta)
+      setBalance(prevBalance => prevBalance + totalReturnedToPlayerThisRound);
     } else {
       if (totalBetAmount > 0) {
         setLoseCount(prev => prev + 1);
+        // Não altera o saldo, pois o valor já foi descontado ao apostar
       }
     }
 
     const houseGainThisRound = totalBetAmount - totalReturnedToPlayerThisRound;
     setHouseProfit(prevProfit => prevProfit + houseGainThisRound);
 
-    const newBalanceAfterSpin = balance + playerNetGainOrLossThisRound;
     setBalanceHistory(prevHistory => {
       const lastEntry = prevHistory[prevHistory.length - 1];
       const lastCumulativeHouseProfit = lastEntry ? lastEntry.profit : 0;
+      // Corrigido: saldo após o giro é o saldo anterior + total devolvido ao jogador (prêmio + aposta) se ganhou, ou saldo igual se perdeu
+      const newBalance = roundPayout > 0 ? (balance + totalReturnedToPlayerThisRound) : balance;
       return [
         ...prevHistory,
         {
           name: `Giro ${currentSpinNumber}`,
-          balance: newBalanceAfterSpin,
+          balance: newBalance,
           profit: lastCumulativeHouseProfit + houseGainThisRound
         }
       ];
     });
 
-    setBalance(prevBalance => prevBalance + playerNetGainOrLossThisRound);
     setLastWin(playerNetGainOrLossThisRound);
 
     if (totalReturnedToPlayerThisRound > 0) {

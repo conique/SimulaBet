@@ -17,8 +17,8 @@ function SlotsPage() {
   };
 
   useEffect(() => {
-      document.title = "Slots";
-    }, []);
+    document.title = "Slots";
+  }, []);
 
   const [results, setResults] = useState([0, 0, 0]);
   const [balance, setBalance] = useState(1000);
@@ -46,6 +46,7 @@ function SlotsPage() {
 
   const [isAutoSpinning, setIsAutoSpinning] = useState(false);
   const autoSpinIntervalId = useRef(null);
+  const [shouldStopAutoSpin, setShouldStopAutoSpin] = useState(false);
 
 
   useEffect(() => {
@@ -68,7 +69,7 @@ function SlotsPage() {
     if (balance < betAmount) {
       setMessage('Saldo insuficiente! Adicione mais créditos para continuar.');
       if (isAutoSpinning) {
-        stopAutoSpin();
+        stopAutoSpin(true); // true = por saldo insuficiente
       }
       return;
     }
@@ -99,13 +100,21 @@ function SlotsPage() {
       handleSpinResultLogic(currentSpinNumber, newResults[0], newResults[1], newResults[2]);
       setIsSpinning(false);
 
-      if (isAutoSpinning && balance >= betAmount) {
+      // Só chama o próximo spin se não for para parar
+      if (isAutoSpinning && balance >= betAmount && !shouldStopAutoSpin) {
         setTimeout(() => {
           spin();
         }, 1000);
       } else if (isAutoSpinning && balance < betAmount) {
-        stopAutoSpin();
+        // Parar por saldo insuficiente
+        setIsAutoSpinning(false);
+        setShouldStopAutoSpin(false);
         setMessage('Auto Spin parado: saldo insuficiente para o próximo giro.');
+      } else if (shouldStopAutoSpin) {
+        // Parar normalmente após giro completo
+        setIsAutoSpinning(false);
+        setShouldStopAutoSpin(false);
+        setMessage('Auto Spin Parado.');
       }
     }, 2500);
   };
@@ -126,13 +135,15 @@ function SlotsPage() {
     }
 
     setBalanceHistory(prevHistory => {
-      const lastProfit = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1].profit : 0;
+      const lastEntry = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1] : { balance: 1000, profit: 0 };
+      // Corrigido: saldo do histórico = saldo anterior - aposta + prêmio
+      const newBalance = lastEntry.balance - betAmount + winAmount;
       return [
         ...prevHistory,
         {
           name: `Giro ${spinNumber}`,
-          balance: balance + winAmount,
-          profit: lastProfit + profitLossThisSpin
+          balance: newBalance,
+          profit: lastEntry.profit + profitLossThisSpin
         }
       ];
     });
@@ -179,6 +190,7 @@ function SlotsPage() {
     if (!isNaN(amount)) {
       setBalance(prevBalance => {
         const newBalance = prevBalance + amount;
+        
         setBalanceHistory(prevHistory => {
           const lastProfit = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1].profit : 0;
           return [
@@ -229,18 +241,23 @@ function SlotsPage() {
     }, 4000);
   };
 
-  const stopAutoSpin = () => {
-    setIsAutoSpinning(false);
+  const stopAutoSpin = (byInsufficientBalance = false) => {
+    if (byInsufficientBalance) {
+      setIsAutoSpinning(false);
+      if (autoSpinIntervalId.current) {
+        clearInterval(autoSpinIntervalId.current);
+        autoSpinIntervalId.current = null;
+      }
+      // Não corta a animação, só para o agendamento
+      setMessage('Auto Spin Parado.');
+      return;
+    }
+    // Marca para parar após o giro atual
+    setShouldStopAutoSpin(true);
     if (autoSpinIntervalId.current) {
       clearInterval(autoSpinIntervalId.current);
       autoSpinIntervalId.current = null;
     }
-    if (spinningTimeout.current) {
-      clearTimeout(spinningTimeout.current);
-      spinningTimeout.current = null;
-      setIsSpinning(false);
-    }
-    setMessage('Auto Spin Parado.');
   };
 
   // --- CÁLCULOS DERIVADOS PARA EXIBIÇÃO DAS ESTATÍSTICAS ---

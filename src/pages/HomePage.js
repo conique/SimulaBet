@@ -15,14 +15,13 @@ function HomePage() {
         </Link>
 
         <Link to="/roulette" className="game-card">
-          <h2>Roleta</h2>
+          <h2>Roleta Americana</h2>
           <p>Faça suas apostas e veja a bola girar!</p>
-          <span className="coming-soon">(Em Breve)</span>
         </Link>
 
         <Link to="/airplane" className="game-card">
           <h2>Crash</h2>
-          <p>Aposte no voo e tente sacar antes que ele caia!</p>
+          <p>Tente sacar antes que o foguete caia!</p>
           <span className="coming-soon">(Em Breve)</span>
         </Link>
       </div>

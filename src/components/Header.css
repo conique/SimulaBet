@@ -3,6 +3,23 @@
   background-color: #222;
   padding: 15px 20px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  height: 40px;
+  width: auto;
+  margin-right: 30px;
+}
+
+nav {
+  flex: 1;
 }
 
 .main-nav-list {
@@ -10,7 +27,7 @@
   margin: 0;
   padding: 0;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 30px;
 }
 
