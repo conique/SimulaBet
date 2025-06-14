@@ -5,6 +5,8 @@
   justify-content: center;
   flex-grow: 1;
   box-sizing: border-box;
+  transform: scale(0.9);
+  transform-origin: top center;
 }
 
 .main-game-layout {
@@ -376,5 +378,4 @@
   color: #00ff00;
   font-weight: bold;
   white-space: nowrap;
-  /* Evita quebra de linha no texto do payout */
 }

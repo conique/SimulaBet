@@ -7,7 +7,7 @@ import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import SlotsPage from './pages/SlotsPage';
 import RoulettePage from './pages/RoulettePage';
-// import AirplanePage from './pages/AirplanePage';
+// import CrashPage from './pages/CrashPage';
 // import AboutPage from './pages/AboutPage';
 // import TCCInfoPage from './pages/TCCInfoPage';
 
@@ -23,7 +23,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/slots" element={<SlotsPage />} />
             <Route path="/roulette" element={<RoulettePage />} />
-            {/* <Route path="/airplane" element={<AirplanePage />} /> */}
+            {/* <Route path="/airplane" element={<CrashPage />} /> */}
             {/* <Route path="/about" element={<AboutPage />} /> */}
             {/* <Route path="/tcc-info" element={<TCCInfoPage />} /> */}
 

@@ -10,18 +10,27 @@ function HomePage() {
 
       <div className="game-options">
         <Link to="/slots" className="game-card">
-          <h2>Slot Machine</h2>
-          <p>Gire os rolos e teste sua sorte!</p>
+          <img src="/images/banners/slots-banner.png" alt="Slots Banner" className="game-banner" />
+          <div className="game-card-content">
+            <h2>Slot Machine</h2>
+            <p>Gire os rolos e teste sua sorte!</p>
+          </div>
         </Link>
 
         <Link to="/roulette" className="game-card">
-          <h2>Roleta Americana</h2>
-          <p>Faça suas apostas e veja a bola girar!</p>
+          <img src="/images/banners/roulette-banner.png" alt="Roleta Banner" className="game-banner" />
+          <div className="game-card-content">
+            <h2>Roleta Americana</h2>
+            <p>Faça suas apostas e veja a bola girar!</p>
+          </div>
         </Link>
 
         <Link to="/airplane" className="game-card">
-          <h2>Crash</h2>
-          <p>Tente sacar antes que o foguete caia!</p>
+          <img src="/images/banners/crash-banner.png" alt="Crash Banner" className="game-banner" />
+          <div className="game-card-content">
+            <h2>Crash</h2>
+            <p>Tente sacar antes que o foguete caia!</p>
+          </div>
           <span className="coming-soon">(Em Breve)</span>
         </Link>
       </div>
