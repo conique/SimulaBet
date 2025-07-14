@@ -190,7 +190,7 @@ function SlotsPage() {
     if (!isNaN(amount)) {
       setBalance(prevBalance => {
         const newBalance = prevBalance + amount;
-        
+
         setBalanceHistory(prevHistory => {
           const lastProfit = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1].profit : 0;
           return [
@@ -304,8 +304,8 @@ function SlotsPage() {
         </div>
 
         <div className="center-column">
+          <h2 className="section-main-title">Simulador de Slot</h2>
           <div className="slot-machine-content">
-            <h2 className="section-main-title">Simulador de Slot</h2>
 
             <div className="slots-display">
               <SlotReelWeb symbols={symbols} finalValueIndex={results[0]} isSpinning={isSpinning} highlightType={reelHighlightType} />

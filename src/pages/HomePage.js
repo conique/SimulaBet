@@ -25,13 +25,12 @@ function HomePage() {
           </div>
         </Link>
 
-        <Link to="/airplane" className="game-card">
+        <Link to="/crash" className="game-card">
           <img src="/images/banners/crash-banner.png" alt="Crash Banner" className="game-banner" />
           <div className="game-card-content">
             <h2>Crash</h2>
             <p>Tente sacar antes que o foguete caia!</p>
           </div>
-          <span className="coming-soon">(Em Breve)</span>
         </Link>
       </div>
 
