@@ -30,48 +30,43 @@ function CrashPage() {
 
     const [adjustAmount, setAdjustAmount] = useState('');
 
+    // --- ESTATÍSTICAS ---
     const [totalRounds, setTotalRounds] = useState(0);
     const [totalMoneySpent, setTotalMoneySpent] = useState(0);
     const [totalMoneyWon, setTotalMoneyWon] = useState(0);
     const [winCount, setWinCount] = useState(0);
     const [loseCount, setLoseCount] = useState(0);
+    
+    // Inicializa com Lucro 0 para a casa
     const [balanceHistory, setBalanceHistory] = useState([
-        { name: 'Rodada 0', balance: 1000, netProfitPlayer: 0 }
+        { name: 'Rodada 0', balance: 1000, profit: 0 }
     ]);
     const [houseProfit, setHouseProfit] = useState(0);
 
+    // Refs para acesso dentro do setInterval
     const latestMultiplierRef = useRef(currentMultiplier);
     const latestBetSlotRef = useRef(betSlot);
     const latestGameRunningRef = useRef(isGameRunning);
     const latestBalanceRef = useRef(balance);
-    const latestTotalMoneySpentRef = useRef(totalMoneySpent);
-    const latestTotalMoneyWonRef = useRef(totalMoneyWon);
+    const latestTotalRoundsRef = useRef(totalRounds);
     const latestWinCountRef = useRef(winCount);
     const latestLoseCountRef = useRef(loseCount);
-    const latestTotalRoundsRef = useRef(totalRounds);
-    const latestBalanceHistoryRef = useRef(balanceHistory);
 
+    // Atualiza Refs
     useEffect(() => {
         latestMultiplierRef.current = currentMultiplier;
         latestBetSlotRef.current = betSlot;
         latestGameRunningRef.current = isGameRunning;
         latestBalanceRef.current = balance;
-        latestTotalMoneySpentRef.current = totalMoneySpent;
-        latestTotalMoneyWonRef.current = totalMoneyWon;
+        latestTotalRoundsRef.current = totalRounds;
         latestWinCountRef.current = winCount;
         latestLoseCountRef.current = loseCount;
-        latestTotalRoundsRef.current = totalRounds;
-        latestBalanceHistoryRef.current = balanceHistory;
     });
 
     useEffect(() => {
         return () => {
-            if (multiplierIntervalRef.current) {
-                clearInterval(multiplierIntervalRef.current);
-            }
-            if (crashPointTimeoutRef.current) {
-                clearTimeout(crashPointTimeoutRef.current);
-            }
+            if (multiplierIntervalRef.current) clearInterval(multiplierIntervalRef.current);
+            if (crashPointTimeoutRef.current) clearTimeout(crashPointTimeoutRef.current);
         };
     }, []);
 
@@ -96,6 +91,7 @@ function CrashPage() {
             return;
         }
 
+        // Deduz a aposta
         setBalance(prevBalance => prevBalance - currentBetAmount);
         setTotalMoneySpent(prevSpent => prevSpent + currentBetAmount);
 
@@ -135,13 +131,7 @@ function CrashPage() {
             const currentMultiplierValue = latestMultiplierRef.current;
             const currentBetSlot = latestBetSlotRef.current;
             const gameIsStillRunning = latestGameRunningRef.current;
-            const currentBalance = latestBalanceRef.current;
-            const currentTotalMoneySpent = latestTotalMoneySpentRef.current;
-            const currentTotalMoneyWon = latestTotalMoneyWonRef.current;
-            const currentWinCount = latestWinCountRef.current;
-            const currentLoseCount = latestLoseCountRef.current;
-            const currentTotalRounds = latestTotalRoundsRef.current;
-            const currentBalanceHistory = latestBalanceHistoryRef.current;
+            const currentTotalRoundsLocal = latestTotalRoundsRef.current;
 
             if (!gameIsStillRunning) {
                 clearInterval(multiplierIntervalRef.current);
@@ -150,6 +140,7 @@ function CrashPage() {
 
             const nextMultiplier = parseFloat((currentMultiplierValue + 0.01).toFixed(2));
 
+            // Lógica de Auto Stop
             if (currentBetSlot.isPlaced && !currentBetSlot.hasCashedOut && currentBetSlot.isAutoStopEnabled && currentBetSlot.autoStopMultiplier !== '') {
                 if (nextMultiplier >= parseFloat(currentBetSlot.autoStopMultiplier)) {
                     cashOut();
@@ -158,47 +149,62 @@ function CrashPage() {
 
             setCurrentMultiplier(nextMultiplier);
 
+            // --- CRASH! ---
             if (nextMultiplier >= randomCrashMultiplier) {
                 clearInterval(multiplierIntervalRef.current);
                 setIsGameRunning(false);
                 setResultMultiplier(randomCrashMultiplier);
 
                 const finalBetSlotState = latestBetSlotRef.current;
-
+                
+                // Cálculos de resultado
                 let hasAnyBetPlaced = finalBetSlotState.isPlaced;
                 let wasCashedOut = finalBetSlotState.hasCashedOut;
-
-                let profitLossThisRound = -finalBetSlotState.betAmount;
+                
+                // Lucro do JOGADOR nesta rodada (positivo = ganhou, negativo = perdeu aposta)
+                let playerProfitThisRound = -finalBetSlotState.betAmount; 
 
                 if (hasAnyBetPlaced && wasCashedOut) {
                     setMessage(`Saque concluído! Explodiu em ${randomCrashMultiplier.toFixed(2)}x.`);
                     setHighlightResult('win');
-                    setWinCount(currentWinCount + 1);
-                    profitLossThisRound = finalBetSlotState.winAmount - finalBetSlotState.betAmount;
+                    // Se sacou, o lucro é (Valor Ganho - Valor Apostado)
+                    playerProfitThisRound = finalBetSlotState.winAmount - finalBetSlotState.betAmount;
                 } else if (hasAnyBetPlaced && !wasCashedOut) {
                     setMessage(`Explodiu em ${randomCrashMultiplier.toFixed(2)}x! Aposta perdida.`);
                     setHighlightResult('lose');
-                    setLoseCount(currentLoseCount + 1);
+                    setLoseCount(latestLoseCountRef.current + 1);
+                    // Se não sacou, perdeu o valor da aposta (já definido em -betAmount)
                 } else {
                     setMessage(`Rodada finalizada em ${randomCrashMultiplier.toFixed(2)}x.`);
                     setHighlightResult('');
-                    profitLossThisRound = 0;
+                    playerProfitThisRound = 0;
                 }
 
-                setBalanceHistory(prevHistory => {
-                    const lastEntry = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1] : { balance: 1000, netProfitPlayer: 0 };
-                    const newPlayerProfit = lastEntry.netProfitPlayer + profitLossThisRound;
-                    return [
-                        ...prevHistory,
-                        {
-                            name: `Rodada ${currentTotalRounds}`,
-                            balance: latestBalanceRef.current,
-                            netProfitPlayer: newPlayerProfit
-                        }
-                    ];
-                });
+                // Lucro da CASA é o inverso do lucro do jogador
+                const houseProfitChange = -playerProfitThisRound;
 
-                setHouseProfit(prevProfit => prevProfit - profitLossThisRound);
+                // Atualiza estatísticas globais da casa
+                setHouseProfit(prev => prev + houseProfitChange);
+
+                // --- CORREÇÃO DO HISTÓRICO ---
+                setBalanceHistory(prevHistory => {
+                    // Pega o último registro para saber o lucro acumulado anterior
+                    const lastEntry = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1] : { balance: 1000, profit: 0 };
+                    const lastAccumulatedHouseProfit = lastEntry.profit || 0;
+                    
+                    const newEntry = {
+                        name: `Rodada ${currentTotalRoundsLocal}`,
+                        balance: latestBalanceRef.current, // Saldo atual do jogador
+                        profit: lastAccumulatedHouseProfit + houseProfitChange // Acumula o lucro da casa
+                    };
+
+                    const newHistory = [...prevHistory, newEntry];
+                    
+                    if (newHistory.length > 50) {
+                        return newHistory.slice(newHistory.length - 50);
+                    }
+                    return newHistory;
+                });
 
                 if (finalBetSlotState.isPlaced && !finalBetSlotState.hasCashedOut) {
                     setBetSlot(s => ({ ...s, isPlaced: false, hasCashedOut: false, winAmount: 0, cashOutMultiplier: null }));
@@ -214,23 +220,20 @@ function CrashPage() {
         if (!latestGameRunningRef.current || currentBetSlot.hasCashedOut || !currentBetSlot.isPlaced) return;
 
         const win = parseFloat((currentBetSlot.betAmount * currentMultiplierValue).toFixed(2));
+        
         setBalance(prevBalance => prevBalance + win);
         setTotalMoneyWon(prevWon => prevWon + win);
         setBetSlot(s => ({ ...s, hasCashedOut: true, winAmount: win, cashOutMultiplier: currentMultiplierValue }));
 
         setMessage(`Você sacou em ${currentMultiplierValue.toFixed(2)}x! Ganhou $${win}!`);
         setHighlightResult('win');
-
         setWinCount(prevCount => prevCount + 1);
     };
 
     const resetGameForNextRound = () => {
-        if (multiplierIntervalRef.current) {
-            clearInterval(multiplierIntervalRef.current);
-        }
+        if (multiplierIntervalRef.current) clearInterval(multiplierIntervalRef.current);
         setIsGameRunning(false);
         setBetSlot(s => ({ ...s, isPlaced: false, hasCashedOut: false, winAmount: 0, cashOutMultiplier: null }));
-
         setMessage('Faça sua aposta para a próxima rodada!');
         setCurrentMultiplier(1.00);
         setResultMultiplier(null);
@@ -240,7 +243,7 @@ function CrashPage() {
     const handleAdjustBalance = () => {
         const amount = parseFloat(adjustAmount);
         if (isNaN(amount) || amount === 0) {
-            setMessage('Por favor, digite um valor válido e diferente de zero para ajustar o saldo.');
+            setMessage('Por favor, digite um valor válido e diferente de zero.');
             return;
         }
 
@@ -250,40 +253,37 @@ function CrashPage() {
                 setMessage('Saldo não pode ser negativo!');
                 return prevBalance;
             }
+            
+            // Ajusta o histórico visualmente sem alterar o lucro da casa
             setBalanceHistory(prevHistory => {
-                const lastEntry = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1] : { balance: 1000, netProfitPlayer: 0 };
-                return [
+                const lastEntry = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1] : { profit: 0 };
+                const newHistory = [
                     ...prevHistory,
                     {
                         name: `Rodada ${latestTotalRoundsRef.current} (Ajuste)`,
                         balance: newBalance,
-                        netProfitPlayer: lastEntry.netProfitPlayer
+                        profit: lastEntry.profit // Mantém o lucro da casa inalterado
                     }
                 ];
+                return newHistory.length > 50 ? newHistory.slice(newHistory.length - 50) : newHistory;
             });
             return newBalance;
         });
 
-        if (amount > 0) {
-            setMessage(`${amount.toFixed(2)} créditos adicionados ao seu saldo.`);
-        } else {
-            setMessage(`${Math.abs(amount).toFixed(2)} créditos removidos do seu saldo.`);
-        }
+        setMessage(`${Math.abs(amount).toFixed(2)} créditos ${amount > 0 ? 'adicionados' : 'removidos'}.`);
         setAdjustAmount('');
     };
 
     const placeBet = () => {
         if (isGameRunning || betSlot.isPlaced) return;
-
         if (betSlot.betAmount <= 0 || isNaN(betSlot.betAmount)) {
             setMessage(`Aposta: Valor inválido.`);
             return;
         }
         if (balance < betSlot.betAmount) {
-            setMessage(`Saldo insuficiente para esta aposta!`);
+            setMessage(`Saldo insuficiente!`);
             return;
         }
-
         setBetSlot(s => ({ ...s, isPlaced: true }));
         setMessage(`Sua aposta de $${betSlot.betAmount.toFixed(2)} foi colocada.`);
     };
@@ -291,13 +291,15 @@ function CrashPage() {
     const clearBet = () => {
         if (isGameRunning) return;
         if (!betSlot.isPlaced) return;
-
-        setBalance(prevBalance => prevBalance + betSlot.betAmount);
+        // Se cancelar a aposta, não reembolsa imediatamente pois o saldo só é descontado no StartGame neste código?
+        // Ah, verifiquei o StartGame: "setBalance(prevBalance => prevBalance - currentBetAmount);"
+        // Então ao colocar a aposta (PlaceBet), você NÃO descontou ainda. Só desconta no Start.
+        // Logo, ClearBet apenas reseta o estado visual, sem mexer no saldo.
         setBetSlot(s => ({ ...s, isPlaced: false, hasCashedOut: false, winAmount: 0, cashOutMultiplier: null }));
         setMessage(`Sua aposta foi removida.`);
     };
 
-    const setBetAmount = (amount) => {
+    const setBetAmountVal = (amount) => {
         setBetSlot(s => ({ ...s, betAmount: parseFloat(amount) || 0 }));
     }
 
@@ -307,7 +309,7 @@ function CrashPage() {
 
     const toggleAutoStopEnabled = () => {
         if (isGameRunning) {
-            setMessage('Não é possível mudar o Auto Stop enquanto o jogo está rodando.');
+            setMessage('Não pode mudar Auto Stop durante o jogo.');
             return;
         }
         setBetSlot(s => ({ ...s, isAutoStopEnabled: !s.isAutoStopEnabled }));
@@ -315,7 +317,6 @@ function CrashPage() {
     };
 
     const isAnyBetPlaced = betSlot.isPlaced;
-
     const winRate = totalRounds > 0 ? ((winCount / totalRounds) * 100).toFixed(2) : 0;
     const netProfitPlayer = totalMoneyWon - totalMoneySpent;
     const houseEdge = totalMoneySpent > 0 ? ((houseProfit / totalMoneySpent) * 100).toFixed(2) : 0;
@@ -331,7 +332,8 @@ function CrashPage() {
     return (
         <div className="crash-page-container">
             <div className="main-game-layout">
-                <div className="left-column-crash">
+                {/* ESQUERDA: REGRAS */}
+               <div className="left-column-crash">
                     <div className="crash-rules-panel panel-style">
                         <h2 className="section-main-title">Regras do Jogo</h2>
                         <h3>Como Jogar:</h3>
@@ -356,9 +358,9 @@ function CrashPage() {
                     </div>
                 </div>
 
+                {/* CENTRO: JOGO */}
                 <div className="center-column-crash">
                     <h2 className="section-main-title">Crash</h2>
-                    
                     <div className="crash-content panel-style">
                         <div className="game-display-area">
                             <div className={`multiplier-display ${highlightResult}`}>
@@ -379,7 +381,7 @@ function CrashPage() {
                                     <input
                                         type="number"
                                         value={betSlot.betAmount}
-                                        onChange={(e) => setBetAmount(e.target.value)}
+                                        onChange={(e) => setBetAmountVal(e.target.value)}
                                         disabled={isGameRunning || betSlot.isPlaced}
                                         className="bet-amount-input"
                                         placeholder="Valor"
@@ -403,7 +405,7 @@ function CrashPage() {
                                     {!isGameRunning ? (
                                         betSlot.isPlaced ? (
                                             <button className="clear-bet-button" onClick={clearBet} disabled={isGameRunning}>
-                                                Apostado ✓
+                                                Cancelar Aposta
                                             </button>
                                         ) : (
                                             <button className="place-bet-button" onClick={placeBet} disabled={balance < betSlot.betAmount || isGameRunning || betSlot.betAmount <= 0}>
@@ -423,70 +425,45 @@ function CrashPage() {
                                             )
                                         )
                                     )}
-                                    {betSlot.isPlaced && !betSlot.hasCashedOut && !isGameRunning && resultMultiplier !== null && (
-                                        <p className="slot-status-lost">PERDEU!</p>
-                                    )}
-                                    {betSlot.isPlaced && betSlot.hasCashedOut && resultMultiplier === null && isGameRunning && (
-                                        <p className="slot-status-cashedout">AGUARDANDO...</p>
-                                    )}
-                                    {!betSlot.isPlaced && resultMultiplier !== null && <p className="slot-status-ready">Pronto p/ prox.</p>}
-                                    {betSlot.isPlaced && !isGameRunning && resultMultiplier === null && <p className="slot-status-ready">Apostado</p>}
-                                    {(!betSlot.isPlaced && resultMultiplier === null && !isGameRunning) && <p className="slot-status-ready">Aguardando aposta</p>}
                                 </div>
                             </div>
 
                             <div className="global-action-buttons">
-                                {!isGameRunning && resultMultiplier === null ? (
-                                    <button
-                                        className="start-game-button"
-                                        onClick={startGame}
-                                        disabled={!isAnyBetPlaced || balance < betSlot.betAmount}
-                                    >
+                                {!isGameRunning && resultMultiplier === null && (
+                                    <button className="start-game-button" onClick={startGame} disabled={!isAnyBetPlaced || balance < betSlot.betAmount}>
                                         Iniciar Jogo
                                     </button>
-                                ) : null}
-
-                                {!isGameRunning && resultMultiplier !== null ? (
+                                )}
+                                {!isGameRunning && resultMultiplier !== null && (
                                     <button className="next-round-button" onClick={resetGameForNextRound}>
                                         Próxima Rodada
                                     </button>
-                                ) : null}
-
+                                )}
                                 <div className="adjust-balance-panel">
-                                    <input
-                                        type="number"
-                                        value={adjustAmount}
-                                        onChange={(e) => setAdjustAmount(e.target.value)}
-                                        placeholder="Ajustar saldo (+/-)"
-                                        className="adjust-input"
-                                    />
-                                    <button onClick={handleAdjustBalance} className="adjust-button">
-                                        Saldo
-                                    </button>
+                                    <input type="number" value={adjustAmount} onChange={(e) => setAdjustAmount(e.target.value)} placeholder="Ajustar saldo" className="adjust-input"/>
+                                    <button onClick={handleAdjustBalance} className="adjust-button">Saldo</button>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
 
+                {/* DIREITA: ESTATÍSTICAS */}
                 <div className="right-column-crash">
-                    <h2 className="section-main-title">Estatísticas do Jogo</h2>
+                    <h2 className="section-main-title">Estatísticas</h2>
                     <div className="stats-block">
                         <h3>Resumo</h3>
                         <div className="stats-summary">
-                            <p><strong>Rodadas Totais:</strong> {totalRounds}</p>
-                            <p><strong>Dinheiro Gasto:</strong> ${totalMoneySpent.toFixed(2)}</p>
-                            <p><strong>Dinheiro Ganho:</strong> ${totalMoneyWon.toFixed(2)}</p>
-                            <p><strong>Lucro Líquido (Jogador):</strong> ${netProfitPlayer.toFixed(2)}</p>
-                            <p><strong>Taxa de Vitória:</strong> {winRate}%</p>
-                            <p><strong>Lucro da Casa:</strong> ${houseProfit.toFixed(2)}</p>
-                            <p><strong>Margem da Casa:</strong> {houseEdge}%</p>
+                            <p><strong>Rodadas:</strong> {totalRounds}</p>
+                            <p><strong>Gasto:</strong> ${totalMoneySpent.toFixed(2)}</p>
+                            <p><strong>Ganho:</strong> ${totalMoneyWon.toFixed(2)}</p>
+                            <p><strong>Lucro Jogador:</strong> ${netProfitPlayer.toFixed(2)}</p>
+                            <p><strong>Lucro Casa:</strong> ${houseProfit.toFixed(2)}</p>
                         </div>
                     </div>
 
                     <div className="stats-block">
-                        <h3>Histórico de Saldo e Lucro do Jogador</h3>
+                        <h3>Histórico de Saldo e Lucro da Casa</h3>
                         <div className="charts-container">
                             <ResponsiveContainer width="100%" height={200}>
                                 <LineChart data={balanceHistory} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
@@ -495,8 +472,8 @@ function CrashPage() {
                                     <YAxis stroke="#ccc" tick={{ fontSize: 10 }} />
                                     <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} itemStyle={{ color: '#fff' }} />
                                     <Legend wrapperStyle={{ color: '#fff' }} />
-                                    <Line type="monotone" dataKey="balance" stroke="#00C49F" name="Saldo" dot={false} />
-                                    <Line type="monotone" dataKey="netProfitPlayer" stroke="#FFBB28" name="Lucro Líquido (Jogador)" dot={false} />
+                                    <Line type="monotone" dataKey="balance" stroke="#00C49F" name="Saldo Jogador" dot={false} />
+                                    <Line type="monotone" dataKey="profit" stroke="#FFBB28" name="Lucro Casa" dot={false} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </div>
@@ -507,27 +484,17 @@ function CrashPage() {
                         <div className="charts-container">
                             <ResponsiveContainer width="100%" height={150}>
                                 <PieChart>
-                                    <Pie
-                                        data={pieChartData}
-                                        cx="50%"
-                                        cy="50%"
-                                        outerRadius={60}
-                                        fill="#8884d8"
-                                        dataKey="value"
-                                        labelLine={false}
-                                    >
-                                        {
-                                            pieChartData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))
-                                        }
+                                    <Pie data={pieChartData} cx="50%" cy="50%" outerRadius={60} fill="#8884d8" dataKey="value" labelLine={false}>
+                                        {pieChartData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
                                     </Pie>
-                                    <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} itemStyle={{ color: '#fff' }} />
+                                    <Tooltip contentStyle={{ backgroundColor: '#333', border: 'none', color: '#fff' }} />
                                     <Legend wrapperStyle={{ color: '#fff' }} />
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
-                        <p className="loss-percentage">Porcentagem de Derrotas: <strong>{lossRate}%</strong></p>
+                        <p className="loss-percentage">Derrotas: <strong>{lossRate}%</strong></p>
                     </div>
                 </div>
             </div>

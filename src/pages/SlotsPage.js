@@ -1,4 +1,3 @@
-// src/pages/SlotsPage.js
 import React, { useState, useRef, useEffect } from 'react';
 import './SlotsPage.css';
 import SlotReelWeb from '../components/SlotReelWeb';
@@ -31,18 +30,16 @@ function SlotsPage() {
   const [adjustAmount, setAdjustAmount] = useState('');
   const [newBetAmount, setNewBetAmount] = useState('');
 
-  // --- ESTADOS PARA ESTATÍSTICAS ---
   const [totalSpins, setTotalSpins] = useState(0);
   const [totalMoneySpent, setTotalMoneySpent] = useState(0);
   const [totalMoneyWon, setTotalMoneyWon] = useState(0);
-  const [winCount, setWinCount] = useState(0); // Vitórias do JOGADOR
-  const [loseCount, setLoseCount] = useState(0); // Derrotas do JOGADOR (lucro da casa)
+  const [winCount, setWinCount] = useState(0);
+  const [loseCount, setLoseCount] = useState(0);
 
-  // Inicializa o histórico com "Giro 0"
   const [balanceHistory, setBalanceHistory] = useState([
     { name: 'Giro 0', balance: 1000, profit: 0 }
   ]);
-  const [houseProfit, setHouseProfit] = useState(0); // Lucro/prejuízo acumulado da casa
+  const [houseProfit, setHouseProfit] = useState(0);
 
   const [isAutoSpinning, setIsAutoSpinning] = useState(false);
   const autoSpinIntervalId = useRef(null);
@@ -69,7 +66,7 @@ function SlotsPage() {
     if (balance < betAmount) {
       setMessage('Saldo insuficiente! Adicione mais créditos para continuar.');
       if (isAutoSpinning) {
-        stopAutoSpin(true); // true = por saldo insuficiente
+        stopAutoSpin(true);
       }
       return;
     }
@@ -100,18 +97,15 @@ function SlotsPage() {
       handleSpinResultLogic(currentSpinNumber, newResults[0], newResults[1], newResults[2]);
       setIsSpinning(false);
 
-      // Só chama o próximo spin se não for para parar
       if (isAutoSpinning && balance >= betAmount && !shouldStopAutoSpin) {
         setTimeout(() => {
           spin();
         }, 1000);
       } else if (isAutoSpinning && balance < betAmount) {
-        // Parar por saldo insuficiente
         setIsAutoSpinning(false);
         setShouldStopAutoSpin(false);
         setMessage('Auto Spin parado: saldo insuficiente para o próximo giro.');
       } else if (shouldStopAutoSpin) {
-        // Parar normalmente após giro completo
         setIsAutoSpinning(false);
         setShouldStopAutoSpin(false);
         setMessage('Auto Spin Parado.');
@@ -136,7 +130,6 @@ function SlotsPage() {
 
     setBalanceHistory(prevHistory => {
       const lastEntry = prevHistory.length > 0 ? prevHistory[prevHistory.length - 1] : { balance: 1000, profit: 0 };
-      // Corrigido: saldo do histórico = saldo anterior - aposta + prêmio
       const newBalance = lastEntry.balance - betAmount + winAmount;
       return [
         ...prevHistory,
@@ -152,7 +145,6 @@ function SlotsPage() {
   };
 
 
-  // Funções auxiliares (calculateWinAmount, setMessageAndHighlight)
   const calculateWinAmount = (res1, res2, res3) => {
     if (res1 === res2 && res2 === res3) {
       const winningSymbolIndex = res1;
@@ -248,11 +240,9 @@ function SlotsPage() {
         clearInterval(autoSpinIntervalId.current);
         autoSpinIntervalId.current = null;
       }
-      // Não corta a animação, só para o agendamento
       setMessage('Auto Spin Parado.');
       return;
     }
-    // Marca para parar após o giro atual
     setShouldStopAutoSpin(true);
     if (autoSpinIntervalId.current) {
       clearInterval(autoSpinIntervalId.current);
@@ -260,7 +250,6 @@ function SlotsPage() {
     }
   };
 
-  // --- CÁLCULOS DERIVADOS PARA EXIBIÇÃO DAS ESTATÍSTICAS ---
   const winRate = totalSpins > 0 ? ((winCount / totalSpins) * 100).toFixed(2) : 0;
   const netProfitPlayer = totalMoneyWon - totalMoneySpent;
   const houseEdge = totalMoneySpent > 0 ? ((houseProfit / totalMoneySpent) * 100).toFixed(2) : 0;

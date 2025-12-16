@@ -8,8 +8,8 @@ import HomePage from './pages/HomePage';
 import SlotsPage from './pages/SlotsPage';
 import RoulettePage from './pages/RoulettePage';
 import CrashPage from './pages/CrashPage';
-// import AboutPage from './pages/AboutPage';
-// import TCCInfoPage from './pages/TCCInfoPage';
+import AboutPage from './pages/AboutPage';
+import TCCPage from './pages/TCCPage';
 
 import './App.css';
 
@@ -24,8 +24,8 @@ function App() {
             <Route path="/slots" element={<SlotsPage />} />
             <Route path="/roulette" element={<RoulettePage />} />
             <Route path="/crash" element={<CrashPage />} />
-            {/* <Route path="/about" element={<AboutPage />} /> */}
-            {/* <Route path="/tcc-info" element={<TCCInfoPage />} /> */}
+            {<Route path="/about" element={<AboutPage />} />}
+            {<Route path="/tcc-info" element={<TCCPage />} />}
 
             <Route path="*" element={<div><h1>404 - Página não encontrada</h1><p>Verifique o endereço.</p></div>} />
           </Routes>
