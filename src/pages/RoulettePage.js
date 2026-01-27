@@ -61,7 +61,7 @@ function RoulettePage() {
 
   const [totalSpins, setTotalSpins] = useState(0);
   const [totalMoneySpent, setTotalMoneySpent] = useState(0);
-  const [totalMoneyWon, setTotalMoneyWon] = useState(0);
+  const [totalMoneyReturned, setTotalMoneyReturned] = useState(0);
   const [winCount, setWinCount] = useState(0);
   const [loseCount, setLoseCount] = useState(0);
   const [balanceHistory, setBalanceHistory] = useState([
@@ -266,35 +266,40 @@ function RoulettePage() {
     const totalReturnedToPlayerThisRound = roundPayout + stakeReturnedOnWins;
     const playerNetGainOrLossThisRound = totalReturnedToPlayerThisRound - totalBetAmount;
 
-    if (roundPayout > 0) {
+    
+    if (totalReturnedToPlayerThisRound > 0) {
       setWinCount(prev => prev + 1);
-      setTotalMoneyWon(prevWon => prevWon + roundPayout);
-      // Corrigido: saldo recebe o valor total devolvido ao jogador (prêmio + aposta)
-      setBalance(prevBalance => prevBalance + totalReturnedToPlayerThisRound);
+      setTotalMoneyReturned(prev => prev + totalReturnedToPlayerThisRound);
+      setBalance(prev => prev + totalReturnedToPlayerThisRound);
     } else {
       if (totalBetAmount > 0) {
         setLoseCount(prev => prev + 1);
-        // Não altera o saldo, pois o valor já foi descontado ao apostar
       }
     }
+  
 
     const houseGainThisRound = totalBetAmount - totalReturnedToPlayerThisRound;
     setHouseProfit(prevProfit => prevProfit + houseGainThisRound);
 
     setBalanceHistory(prevHistory => {
       const lastEntry = prevHistory[prevHistory.length - 1];
-      const lastCumulativeHouseProfit = lastEntry ? lastEntry.profit : 0;
-      // Corrigido: saldo após o giro é o saldo anterior + total devolvido ao jogador (prêmio + aposta) se ganhou, ou saldo igual se perdeu
-      const newBalance = roundPayout > 0 ? (balance + totalReturnedToPlayerThisRound) : balance;
+      const lastHouseProfit = lastEntry ? lastEntry.profit : 0;
+    
       return [
         ...prevHistory,
         {
           name: `Giro ${currentSpinNumber}`,
-          balance: newBalance,
-          profit: lastCumulativeHouseProfit + houseGainThisRound
+          balance:
+            prevHistory.length > 0
+              ? prevHistory[prevHistory.length - 1].balance +
+                totalReturnedToPlayerThisRound -
+                totalBetAmount
+              : balance,
+          profit: lastHouseProfit + houseGainThisRound
         }
       ];
     });
+    
 
     setLastWin(playerNetGainOrLossThisRound);
 
@@ -336,7 +341,7 @@ function RoulettePage() {
   };
 
   const winRate = totalSpins > 0 ? ((winCount / totalSpins) * 100).toFixed(2) : "0.00";
-  const netProfitPlayer = totalMoneyWon - totalMoneySpent;
+  const netProfitPlayer = totalMoneyReturned - totalMoneySpent;
   const houseEdge = totalMoneySpent > 0 ? ((houseProfit / totalMoneySpent) * 100).toFixed(2) : "0.00";
   const lossRate = totalSpins > 0 ? ((loseCount / totalSpins) * 100).toFixed(2) : "0.00";
 
@@ -533,7 +538,7 @@ function RoulettePage() {
               <div className="stats-summary">
                 <p><strong>Giros Totais:</strong> {totalSpins}</p>
                 <p><strong>Dinheiro Gasto:</strong> ${totalMoneySpent}</p>
-                <p><strong>Dinheiro Ganho:</strong> ${totalMoneyWon}</p>
+                <p><strong>Dinheiro Ganho:</strong> ${totalMoneyReturned}</p>
                 <p><strong>Lucro Líquido (Jogador):</strong> ${netProfitPlayer}</p>
                 <p><strong>Taxa de Vitória:</strong> {winRate}%</p>
                 <p><strong>Lucro da Casa:</strong> ${houseProfit}</p>
