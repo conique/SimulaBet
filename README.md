@@ -39,7 +39,7 @@ Para rodar este projeto em sua máquina local:
     ```
 2.  **Navegue até a pasta do projeto:**
     ```bash
-    cd Simulador-Cassino-Online
+    cd SimulaBet
     ```
 3.  **Instale as dependências:**
     ```bash
