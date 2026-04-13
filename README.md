@@ -1,6 +1,6 @@
-# Simulador de Cassino Online - TCC
+# SimulaBet - Simulador de Cassino Online
 
-Este projeto é o Trabalho de Conclusão de Curso (TCC) focado no desenvolvimento de um simulador de jogos de cassino online. O objetivo principal é demonstrar os conceitos de lógica de jogos, design de interface de usuário (UI/UX) e análise de dados em um ambiente interativo.
+Este projeto é o Trabalho de Conclusão de Curso focado no desenvolvimento de um simulador de jogos de cassino online. O objetivo principal é demonstrar os conceitos de lógica de jogos, design de interface de usuário (UI/UX) e análise de dados em um ambiente interativo.
 
 ## Funcionalidades Atuais
 
